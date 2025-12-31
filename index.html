@@ -1,290 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <link rel="icon" type="image/svg+xml" href="/vite.svg">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>portifolio.ev</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>portifolio.ev</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
-    <!-- ================= 3D Canvas ================= -->
-    <canvas id="webgl"></canvas>
-    
-    <!-- Loading Screen -->
-    <div class="loading-screen">
-        <div class="loader">
-            <div class="loader-spinner"></div>
-            <p>Loading 3D Experience...</p>
-        </div>
+  <!-- ================= 3D Canvas ================= -->
+  <canvas id="webgl"></canvas>
+
+  <!-- Loading Screen -->
+  <div class="loading-screen">
+    <div class="loader">
+      <div class="loader-spinner"></div>
+      <p>Loading . . .</p>
     </div>
-    
-    <!-- Navigation Menu -->
-    <nav class="main-nav">
-        <div class="nav-container">
-            <div class="logo">
-                <h1><span class="logo-highlight">eldissone vilonga</span>.finev</h1>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="main-nav">
+    <div class="nav-container">
+      <div class="logo">
+        <h1><span class="logo-highlight">eldissone vilonga</span>.portifolio</h1>
+      </div>
+      <button class="menu-toggle" id="menuToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="#home" class="nav-link">Home</a></li>
+        <li><a href="#projects" class="nav-link">Projects</a></li>
+        <li><a href="#skills" class="nav-link">Skills</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+    <!-- SECTION 1: Hero -->
+    <section class="section-one" id="home">
+      <div class="container">
+        <div class="hero-content">
+          <div class="text-box">
+            <h1 class="hero-title">
+              <br>
+              I'm Eldissone <strong class="name-highlight">Vilonga</strong>
+            </h1>
+            <p class="hero-description">
+              I’m the founder and developer behind projects and startups focused on finance, investment intelligence,
+              agriculture, and digital platforms — including solutions that apply data analysis and AI concepts to
+              generate personalized investment projections and strategic insights. <br> <br>
+
+              My work is guided by accessibility, performance, scalability, and problem-driven thinking. I believe
+              technology should be human-centered, practical, and built to last. I don’t just write code — I build
+              solutions that respect users, adapt to real needs, and create long-term impact.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#contact">Contact Me</a>
+              <a class="btn btn-outline" href="#projects">View Projects</a>
             </div>
-            <button class="menu-toggle" id="menuToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="#home" class="nav-link">Home</a></li>
-                <li><a href="#projects" class="nav-link">Projects</a></li>
-                <li><a href="#skills" class="nav-link">Skills</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
-            </ul>
+          </div>
+
+          <div class="hero-visual">
+            <div class="floating-shapes">
+              <div class="shape shape-1"></div>
+              <div class="shape shape-2"></div>
+              <div class="shape shape-3"></div>
+            </div>
+            <div class="hero-image">
+              <img src="./src/assets/img/ev.png" alt="Full Stack Developer">
+            </div>
+          </div>
         </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main>
-        <!-- SECTION 1: Hero -->
-        <section class="section-one" id="home">
-            <div class="container">
-                <div class="hero-content">
-                    <div class="text-box">
-                        <h1 class="hero-title">
-                            <span class="greeting">Nice to meet you!</span>
-                            <br>
-                            I'm <strong class="name-highlight">Eldissone Vilonga</strong>
-                        </h1>
-                        <p class="hero-description">
-                            Currently living in Angola, I am a front-end and future full-stack developer, 
-                            passionate about creating accessible web applications that can be a solution
-                            to any problem regardless of the nature and needs of the users.
-                        </p>
-                        <div class="hero-actions">
-                            <a class="btn btn-primary" href="#contact">Contact Me</a>
-                            <a class="btn btn-outline" href="#projects">View Projects</a>
-                        </div>
-                    </div>
-                    
-                    <div class="hero-visual">
-                        <div class="floating-shapes">
-                            <div class="shape shape-1"></div>
-                            <div class="shape shape-2"></div>
-                            <div class="shape shape-3"></div>
-                        </div>
-                        <div class="hero-image">
-                            <img src="./src/assets/img/ev.png" alt="Full Stack Developer">
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Social Links -->
-                <div class="social-links">
-                    <p>Connect with me:</p>
-                    <ul>
-                        <li><a href="#" class="social-link" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
-                        <li><a href="#" class="social-link" aria-label="GitHub"><i class="fab fa-github"></i></a></li>
-                        <li><a href="#" class="social-link" aria-label="Discord"><i class="fab fa-discord"></i></a></li>
-                        <li><a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
-                        <li><a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook"></i></a></li>
-                        <li><a href="#" class="social-link" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></li>
-                        <li><a href="#" class="social-link" aria-label="Email"><i class="fas fa-envelope"></i></a></li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-        
-        <!-- SECTION 2: Skills -->
-        <section class="section-two" id="skills">
-            <div class="container">
-                <h2 class="section-title">My <span class="highlight">Skills</span></h2>
-                <div class="skills-grid">
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <h3>Frontend Development</h3>
-                        <p>HTML5, CSS3, JavaScript, React, Vue.js, responsive design and modern frameworks.</p>
-                    </div>
-                    
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-server"></i>
-                        </div>
-                        <h3>Backend Development</h3>
-                        <p>Node.js, Express,Postgres, MongoDB, REST APIs, authentication and server-side logic.</p>
-                    </div>
-                    
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-paint-brush"></i>
-                        </div>
-                        <h3>UI/UX Design</h3>
-                        <p>User-centered design, wireframing, prototyping, and creating engaging interfaces.</p>
-                    </div>
-                    
-                    <div class="skill-card">
-                        <div class="skill-icon">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <h3>Responsive Design</h3>
-                        <p>Creating websites that work perfectly on all devices and screen sizes.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- SECTION 3: Projects -->
-        <section class="section-three" id="projects">
-            <div class="container">
-                <h2 class="section-title">Recent <span class="highlight">Projects</span></h2>
-                <div class="projects-grid">
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-overlay">
-                                <h3>E-Commerce Platform</h3>
-                                <p>Full-featured online shopping platform with cart, checkout, and admin panel.</p>
-                                <a href="#" class="project-link">View Details <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <h3>E-Commerce Platform</h3>
-                            <div class="tech-tags">
-                                <span>React</span>
-                                <span>Node.js</span>
-                                <span>MongoDB</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-overlay">
-                                <h3>Task Management App</h3>
-                                <p>Productivity application with team collaboration features and real-time updates.</p>
-                                <a href="#" class="project-link">View Details <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <h3>Task Management App</h3>
-                            <div class="tech-tags">
-                                <span>Vue.js</span>
-                                <span>Express</span>
-                                <span>Socket.io</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-overlay">
-                                <h3>Weather Dashboard</h3>
-                                <p>Interactive weather application with maps, forecasts, and location-based data.</p>
-                                <a href="#" class="project-link">View Details <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
-                        <div class="project-info">
-                            <h3>Weather Dashboard</h3>
-                            <div class="tech-tags">
-                                <span>JavaScript</span>
-                                <span>API Integration</span>
-                                <span>Chart.js</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- SECTION 4: Contact -->
-        <section class="section-four" id="contact">
-            <div class="container">
-                <div class="contact-wrapper">
-                    <div class="contact-info">
-                        <h2 class="section-title">Get In <span class="highlight">Touch</span></h2>
-                        <p class="contact-description">
-                            I would love to hear about your project and help develop your idea. 
-                            Let's create something amazing together!
-                            <span class="highlight-text">I can help you bring your vision to life.</span>
-                        </p>
-                        <div class="contact-details">
-                            <div class="contact-item">
-                                <i class="fas fa-envelope"></i>
-                                <div>
-                                    <h4>Email</h4>
-                                    <p>eldissonev@gmail.com</p>
-                                    <p>evilonga.mentoria33@gmail.com</p>
-                                </div>
-                            </div>
-                            <div class="contact-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <div>
-                                    <h4>Location</h4>
-                                    <p>Angola, Huíla - Lubango</p>
-                                </div>
-                            </div>
-                            <div class="contact-item">
-                                <i class="fas fa-phone"></i>
-                                <div>
-                                    <h4>Phone</h4>
-                                    <p>+244 933 170 799</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <form class="contact-form" action="#">
-                        <div class="form-group">
-                            <input type="text" name="name" placeholder="Your Name" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" name="email" placeholder="Your Email" required>
-                        </div>
-                        <div class="form-group">
-                            <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Send Message <i class="fas fa-paper-plane"></i></button>
-                    </form>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Footer -->
-        <footer>
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-logo">
-                        <h2>Eldissone <span class="highlight">Vilonga</span></h2>
-                        <p>Founder at finev & Web Developer</p>
-                    </div>
-                    
-                    <div class="footer-social">
-                        <p>Follow me on social media:</p>
-                        <ul>
-                            <li><a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
-                            <li><a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a></li>
-                            <li><a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a></li>
-                            <li><a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
-                            <li><a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a></li>
-                            <li><a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></li>
-                            <li><a href="#" aria-label="Email"><i class="fas fa-envelope"></i></a></li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="footer-bottom">
-                    <p>&copy; Copyright 2025 | Portfolio - Eldissone Vilonga</p>
-                </div>
-            </div>
-        </footer>
-    </main>
+        <!-- Social Links -->
+        <div class="social-links">
+          <p>Connect with me:</p>
+          <ul>
+            <li><a href="https://www.linkedin.com/in/eldissone-vilonga-210207239"  target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
+            <li><a href="https://github.com/Eldissone"  target="_blank" rel="noopener noreferrer" class="social-link" aria-label="GitHub"><i class="fab fa-github"></i></a></li>
+            <li><a href="https://discord.com/users/1052145528873431090"  target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Discord"><i class="fab fa-discord"></i></a></li>
+            <li><a href="https://www.instagram.com/eldissone/"  target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
+            <li><a href="https://www.facebook.com/heicy.mallike/"  target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook"><i class="fab fa-facebook"></i></a></li>
+            <li><a href="https://wa.me/244933170799"  target="_blank" rel="noopener noreferrer" class="social-link" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></li>
+            <li><a href="#contact" class="social-link" aria-label="Email"><i class="fas fa-envelope"></i></a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
 
-    <!-- Back to Top Button -->
-    <button class="back-to-top" id="backToTop">
-        <i class="fas fa-chevron-up"></i>
-    </button>
+    <!-- SECTION 2: Skills -->
+    <section class="section-two" id="skills">
+      <div class="container">
+        <h2 class="section-title">My <span class="highlight">Skills</span></h2>
+        <div class="skills-grid">
+          <div class="skill-card">
+            <div class="skill-icon">
+              <i class="fas fa-code"></i>
+            </div>
+            <h3>Frontend Development</h3>
+            <p>HTML5, CSS3, JavaScript, Node.js, React, Vue.js, responsive design and modern frameworks.</p>
+          </div>
 
-    <script type="module" src="./src/main.js"></script>
-    <script type="module" src="script.js"></script>
+          <div class="skill-card">
+            <div class="skill-icon">
+              <i class="fas fa-server"></i>
+            </div>
+            <h3>Backend Development</h3>
+            <p>Node.js, Express,Postgres, MongoDB, REST APIs, authentication and server-side logic.</p>
+          </div>
+
+          <div class="skill-card">
+            <div class="skill-icon">
+              <i class="fas fa-paint-brush"></i>
+            </div>
+            <h3>UI/UX Design</h3>
+            <p>User-centered design, wireframing, prototyping, and creating engaging interfaces.</p>
+          </div>
+
+          <div class="skill-card">
+            <div class="skill-icon">
+              <i class="fas fa-mobile-alt"></i>
+            </div>
+            <h3>Responsive Design</h3>
+            <p>Creating websites that work perfectly on all devices and screen sizes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Projects -->
+    <section class="section-three" id="projects">
+      <div class="container">
+        <h2 class="section-title">Recent <span class="highlight">Projects</span></h2>
+        <div class="projects-grid">
+          <div class="project-card">
+            <div class="project-image">
+              <img src="./src/assets/img/finev.png" alt="">
+              <div class="project-overlay">
+                <h3>finev IA mentorship</h3>
+                <p>AI-assisted mentoring platform.</p>
+                <a href="https://fine.reviews/" class="project-link">View Details <i class="fas fa-arrow-right"></i></a>
+              </div>
+            </div>
+            <div class="project-info">
+              <h3>finev IA mentorship</h3>
+              <div class="tech-tags">
+                <span>HTML5</span>
+                <span>CSS3</span>
+                <span>Tailwind</span>
+                <span>JavaScript</span>
+                <span>IA</span>
+                <span>Node.js</span>
+                <span>Postgres</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-image">
+              <img src="./src/assets/img/nexus1.png" alt="">
+              <div class="project-overlay">
+                <h3>NEXUS ANALYTICS</h3>
+                <p>Nexus is an intelligent platform that analyzes personal or company/brand profiles on social media and proposes engagement and content creation strategies.</p>
+                <a href="#" class="project-link">View Details <i class="fas fa-arrow-right"></i></a>
+              </div>
+            </div>
+            <div class="project-info">
+              <h3>NEXUS ANALYTICS</h3>
+              <div class="tech-tags">
+                <span>Vue.js</span>
+                <span>HTML5</span>
+                <span>Three.js</span>
+                <span>JavaScript</span>
+                <span>Node.js</span>
+                <span>Express</span>
+                <span>Socket.io</span>
+                <span>IA</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-image">
+              <img src="./src/assets/img/grupo.png" alt="">
+              <div class="project-overlay">
+                <h3>Unione group Site</h3>
+                <p>Institutional website of the Unione group, which comprises more than twelve companies.</p>
+                <a href="https://unioneafrica.com/" class="project-link">View Details <i class="fas fa-arrow-right"></i></a>
+              </div>
+            </div>
+            <div class="project-info">
+              <h3>Unione group Site</h3>
+              <div class="tech-tags">
+                <span>HTML5</span>
+                <span>CSS3</span>
+                <span>JavaScript</span>
+                <span>Express</span>
+                <span>Node.js</span>
+                <span>Postgres</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Contact -->
+    <section class="section-four" id="contact">
+      <div class="container">
+        <div class="contact-wrapper">
+          <div class="contact-info">
+            <h2 class="section-title">Get In <span class="highlight">Touch</span></h2>
+            <p class="contact-description">
+              I would love to hear about your project and help develop your idea.
+              Let's create something amazing together!
+              <span class="highlight-text">I can help you bring your vision to life.</span>
+            </p>
+            <div class="contact-details">
+              <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <div>
+                  <h4>Email</h4>
+                  <p>eldissonev@gmail.com</p>
+                  <p>evilonga.mentoria33@gmail.com</p>
+                </div>
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                  <h4>Location</h4>
+                  <p>Angola, Huíla - Lubango</p>
+                </div>
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <div>
+                  <h4>Phone</h4>
+                  <p>+244 933 170 799</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form class="contact-form" action="#">
+            <div class="form-group">
+              <input type="text" name="name" placeholder="Your Name" required>
+            </div>
+            <div class="form-group">
+              <input type="email" name="email" placeholder="Your Email" required>
+            </div>
+            <div class="form-group">
+              <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Send Message <i
+                class="fas fa-paper-plane"></i></button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-logo">
+            <h2>Eldissone <span class="highlight">Vilonga</span></h2>
+            <p>Founder at finev & Web Developer</p>
+          </div>
+
+          <div class="footer-social">
+            <p>Follow me on social media:</p>
+            <ul>
+              <li><a href="www.linkedin.com/in/eldissone-vilonga-210207239"  target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
+              <li><a href="https://github.com/Eldissone"  target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a></li>
+              <li><a href="https://discord.com/users/1052145528873431090"  target="_blank" rel="noopener noreferrer" aria-label="Discord"><i class="fab fa-discord"></i></a></li>
+              <li><a href="https://www.instagram.com/eldissone/"  target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
+              <li><a href="https://www.facebook.com/heicy.mallike/"  target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook"></i></a></li>
+              <li><a href="https://wa.me/244933170799"  target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></li>
+              <li><a href="#contact" aria-label="Email"><i class="fas fa-envelope"></i></a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>&copy; Copyright 2025 | Portfolio - Eldissone Vilonga</p>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" id="backToTop">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <script type="module" src="./src/main.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
+
 </html>
