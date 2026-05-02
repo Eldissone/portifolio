@@ -342,9 +342,9 @@
 }
 
 :root {
-  --primary: hsl(28, 60%, 45%);
-  --primary-light: hsl(28, 55%, 60%);
-  --primary-dark: hsl(28, 65%, 35%);
+  --primary: #FF7A00;
+  --primary-light: #FFA24D;
+  --primary-dark: #CC6200;
   --bg: hsl(30, 20%, 97%);
   --bg-dark: hsl(30, 8%, 12%);
   --fg: hsl(30, 10%, 10%);
@@ -506,6 +506,7 @@ main {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  font-size: 2rem;
 }
 
 .nav-menu {
@@ -714,7 +715,7 @@ section {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.2em;
 }
 
 .hero-description {

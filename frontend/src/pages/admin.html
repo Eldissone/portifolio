@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-AO">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Eldissone Vilonga</title>
+  <link rel="icon" type="image/svg+xml" href="../../public/finev.ico">
   <link rel="stylesheet" href="../../style.css">
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body class="admin-body">
 
   <!-- Login Overlay -->
@@ -119,55 +122,55 @@
         <div id="projectFields">
           <div class="form-grid">
             <div class="form-group">
-                <label>Título do Projecto</label>
-                <input type="text" name="title" required>
+              <label>Título do Projecto</label>
+              <input type="text" name="title" required>
             </div>
             <div class="form-group">
-                <label>Categoria</label>
-                <select name="category" required>
-                    <option value="ecommerce">E-commerce</option>
-                    <option value="platform">Plataforma Web</option>
-                    <option value="website">Website</option>
-                    <option value="backend">API & Backend</option>
-                </select>
+              <label>Categoria</label>
+              <select name="category" required>
+                <option value="ecommerce">E-commerce</option>
+                <option value="platform">Plataforma Web</option>
+                <option value="website">Website</option>
+                <option value="backend">API & Backend</option>
+              </select>
             </div>
           </div>
 
           <div class="form-group">
-              <label>Resumo Curto (Aparece no Grid)</label>
-              <input type="text" name="description" required>
+            <label>Resumo Curto (Aparece no Grid)</label>
+            <input type="text" name="description" required>
           </div>
 
           <div class="form-group">
-              <label>Visão Geral (Detalhes)</label>
-              <textarea name="overview" rows="3"></textarea>
+            <label>Visão Geral (Detalhes)</label>
+            <textarea name="overview" rows="3"></textarea>
           </div>
 
           <div class="form-grid">
-              <div class="form-group">
-                  <label>O Desafio</label>
-                  <textarea name="challenge" rows="3"></textarea>
-              </div>
-              <div class="form-group">
-                  <label>A Solução</label>
-                  <textarea name="solution" rows="3"></textarea>
-              </div>
+            <div class="form-group">
+              <label>O Desafio</label>
+              <textarea name="challenge" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>A Solução</label>
+              <textarea name="solution" rows="3"></textarea>
+            </div>
           </div>
 
           <div class="form-grid">
-              <div class="form-group">
-                  <label>Função / Cargo</label>
-                  <input type="text" name="role" placeholder="ex: Lead Developer">
-              </div>
-              <div class="form-group">
-                  <label>Link do Projecto</label>
-                  <input type="url" name="link" placeholder="https://...">
-              </div>
+            <div class="form-group">
+              <label>Função / Cargo</label>
+              <input type="text" name="role" placeholder="ex: Lead Developer">
+            </div>
+            <div class="form-group">
+              <label>Link do Projecto</label>
+              <input type="url" name="link" placeholder="https://...">
+            </div>
           </div>
 
           <div class="form-group">
-              <label>Tecnologias (separadas por vírgula)</label>
-              <input type="text" name="techStack" placeholder="React, Node.js, Prisma">
+            <label>Tecnologias (separadas por vírgula)</label>
+            <input type="text" name="techStack" placeholder="React, Node.js, Prisma">
           </div>
         </div>
 
@@ -204,4 +207,5 @@
 
   <script src="admin.js"></script>
 </body>
+
 </html>
