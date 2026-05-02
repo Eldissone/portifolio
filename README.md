@@ -1,5 +1,27 @@
-# Vue 3 + Vite
+# Portfolio EV — Full Stack
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Este projecto está dividido em duas partes principais:
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## 📁 Estrutura
+- **`/frontend`**: Interface do utilizador (Vite, Vue, HTML/CSS).
+- **`/backend`**: API e Base de Dados (Express, Prisma, PostgreSQL).
+
+## 🚀 Como Executar
+
+### 1. Instalação
+Na raiz do projecto, executa:
+```bash
+npm run install:all
+```
+
+### 2. Base de Dados
+Configura o `.env` dentro da pasta `/backend` e depois executa:
+```bash
+npm run db:push
+npm run db:seed
+```
+
+### 3. Desenvolvimento
+Para iniciar ambas as partes:
+- Frontend: `npm run dev:frontend`
+- Backend: `npm run dev:backend`

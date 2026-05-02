@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Serviços de desenvolvimento web e aplicações — Eldissone Vilonga. Soluções digitais à tua medida com preços transparentes.">
+  <title>Serviços | Eldissone Vilonga</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="services.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Loading -->
+  <div class="loading-screen">
+    <div class="loader">
+      <div class="loader-spinner"></div>
+      <p>A carregar...</p>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="main-nav">
+    <div class="nav-container">
+      <div class="logo">
+        <a href="../../index.html"><h1><span class="logo-highlight">eldissone</span>.dev</h1></a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="../../index.html#home"     class="nav-link">Início</a></li>
+        <li><a href="../../index.html#about"    class="nav-link">Sobre</a></li>
+        <li><a href="servicos.html"       class="nav-link active">Serviços</a></li>
+        <li><a href="../../index.html#projects" class="nav-link">Projectos</a></li>
+        <li><a href="../../index.html#contact"  class="nav-link">Contacto</a></li>
+        <!-- Mobile Actions -->
+        <li class="mobile-only nav-mobile-actions">
+          <a href="../../index.html#contact" class="btn btn-primary btn-sm">
+            <i class="fas fa-paper-plane"></i> Fale comigo
+          </a>
+          <button class="theme-toggle theme-toggle-mobile" aria-label="Alternar tema">
+            <i class="fas fa-moon"></i>
+          </button>
+        </li>
+      </ul>
+      <div class="nav-right desktop-only">
+        <a href="../../index.html#contact" class="btn btn-primary btn-sm">
+          <i class="fas fa-paper-plane"></i> Fale comigo
+        </a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+
+  <main style="padding-top:80px;">
+
+    <!-- PAGE HERO -->
+    <section class="page-hero">
+      <div class="container">
+        <div class="page-hero-tag">
+          <i class="fas fa-cog"></i> Serviços
+        </div>
+        <h1 class="page-hero-title">
+          Soluções digitais<br>
+          <em class="text-copper">à tua medida</em>
+        </h1>
+        <p class="page-hero-sub">
+          Do domínio à app completa — escolhe o que precisas e eu trato do resto.<br>
+          Preços transparentes, sem letras pequenas.
+        </p>
+
+        <!-- Currency Toggle -->
+        <div class="currency-toggle">
+          <button class="currency-btn active" data-currency="kz" id="btnKz">
+            Kz Kwanzas
+          </button>
+          <button class="currency-btn" data-currency="eur" id="btnEur">
+            € Euros
+          </button>
+        </div>
+        <p class="exchange-note">Câmbio referência: 1 € ≈ 1 100 Kz</p>
+      </div>
+    </section>
+
+    <!-- SERVICES GRID -->
+    <section class="services-page-section">
+      <div class="container">
+        <div class="services-page-grid">
+
+          <!-- Card 1 -->
+          <div class="service-page-card reveal reveal-delay-1">
+            <div class="spc-icon"><i class="fas fa-globe"></i></div>
+            <h3>Domínio + Email Profissional</h3>
+            <p class="spc-desc">Compra, configuração de domínio e criação de emails com o teu nome.</p>
+            <div class="spc-price-block">
+              <span class="spc-from">A partir de</span>
+              <span class="spc-price" data-kz="55 000 Kz" data-eur="50 €">55 000 Kz</span>
+            </div>
+            <p class="spc-delivery"><i class="fas fa-clock"></i> Entrega: 2 a 6 dias</p>
+            <ul class="spc-features">
+              <li><i class="fas fa-check"></i> Registo do domínio (.com, .ao, .net)</li>
+              <li><i class="fas fa-check"></i> Até 5 emails profissionais</li>
+              <li><i class="fas fa-check"></i> Configuração DNS incluída</li>
+            </ul>
+            <a href="index.html#contact" class="btn btn-outline spc-btn">Solicitar</a>
+          </div>
+
+          <!-- Card 2 — Featured -->
+          <div class="service-page-card featured reveal reveal-delay-2">
+            <div class="spc-badge">Mais procurado</div>
+            <div class="spc-icon"><i class="fas fa-laptop-code"></i></div>
+            <h3>Site Institucional</h3>
+            <p class="spc-desc">Sites profissionais para apresentar a tua empresa ou marca pessoal.</p>
+            <div class="spc-price-block">
+              <span class="spc-from">A partir de</span>
+              <span class="spc-price" data-kz="660 000 Kz" data-eur="600 €">660 000 Kz</span>
+            </div>
+            <p class="spc-delivery"><i class="fas fa-clock"></i> Entrega: 2 a 4 semanas</p>
+            <ul class="spc-features">
+              <li><i class="fas fa-check"></i> Design responsivo (mobile/desktop)</li>
+              <li><i class="fas fa-check"></i> Até 6 páginas</li>
+              <li><i class="fas fa-check"></i> SEO básico optimizado</li>
+              <li><i class="fas fa-check"></i> Formulário de contacto</li>
+              <li><i class="fas fa-check"></i> 1 mês de suporte incluído</li>
+            </ul>
+            <a href="index.html#contact" class="btn btn-primary spc-btn">Solicitar</a>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="service-page-card reveal reveal-delay-3">
+            <div class="spc-icon"><i class="fas fa-server"></i></div>
+            <h3>Plataforma de Gestão</h3>
+            <p class="spc-desc">Sistemas web para gerir o teu negócio (clientes, stock, facturas).</p>
+            <div class="spc-price-block">
+              <span class="spc-from">A partir de</span>
+              <span class="spc-price" data-kz="2 750 000 Kz" data-eur="2 500 €">2 750 000 Kz</span>
+            </div>
+            <p class="spc-delivery"><i class="fas fa-clock"></i> Entrega: 6 a 12 semanas</p>
+            <ul class="spc-features">
+              <li><i class="fas fa-check"></i> Painel administrativo completo</li>
+              <li><i class="fas fa-check"></i> Autenticação e perfis de utilizador</li>
+              <li><i class="fas fa-check"></i> Relatórios e exportação PDF</li>
+              <li><i class="fas fa-check"></i> API REST integrada</li>
+            </ul>
+            <a href="index.html#contact" class="btn btn-outline spc-btn">Solicitar</a>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="service-page-card reveal reveal-delay-1">
+            <div class="spc-icon"><i class="fas fa-mobile-alt"></i></div>
+            <h3>Landing Page</h3>
+            <p class="spc-desc">Página de alta conversão para captar leads, vender produtos ou promover eventos.</p>
+            <div class="spc-price-block">
+              <span class="spc-from">A partir de</span>
+              <span class="spc-price" data-kz="220 000 Kz" data-eur="200 €">220 000 Kz</span>
+            </div>
+            <p class="spc-delivery"><i class="fas fa-clock"></i> Entrega: 1 a 2 semanas</p>
+            <ul class="spc-features">
+              <li><i class="fas fa-check"></i> Design premium focado em conversão</li>
+              <li><i class="fas fa-check"></i> Integração com WhatsApp</li>
+              <li><i class="fas fa-check"></i> Optimização para Google</li>
+            </ul>
+            <a href="index.html#contact" class="btn btn-outline spc-btn">Solicitar</a>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="service-page-card reveal reveal-delay-2">
+            <div class="spc-icon"><i class="fas fa-brain"></i></div>
+            <h3>App com Integração de IA</h3>
+            <p class="spc-desc">Aplicações web com funcionalidades de inteligência artificial — chatbots, análise e automação.</p>
+            <div class="spc-price-block">
+              <span class="spc-from">A partir de</span>
+              <span class="spc-price" data-kz="3 300 000 Kz" data-eur="3 000 €">3 300 000 Kz</span>
+            </div>
+            <p class="spc-delivery"><i class="fas fa-clock"></i> Entrega: 8 a 16 semanas</p>
+            <ul class="spc-features">
+              <li><i class="fas fa-check"></i> Integração com GPT / Gemini</li>
+              <li><i class="fas fa-check"></i> Análise automática de dados</li>
+              <li><i class="fas fa-check"></i> Relatórios inteligentes</li>
+            </ul>
+            <a href="index.html#contact" class="btn btn-outline spc-btn">Solicitar</a>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="service-page-card reveal reveal-delay-3">
+            <div class="spc-icon"><i class="fas fa-chart-line"></i></div>
+            <h3>Consultoria &amp; Mentoria</h3>
+            <p class="spc-desc">Sessões de consultoria técnica para startups, developers e empreendedores digitais.</p>
+            <div class="spc-price-block">
+              <span class="spc-from">A partir de</span>
+              <span class="spc-price" data-kz="55 000 Kz/h" data-eur="50 €/h">55 000 Kz/h</span>
+            </div>
+            <p class="spc-delivery"><i class="fas fa-clock"></i> Flexível — presencial ou remoto</p>
+            <ul class="spc-features">
+              <li><i class="fas fa-check"></i> Auditoria de código e arquitectura</li>
+              <li><i class="fas fa-check"></i> Estratégia de produto digital</li>
+              <li><i class="fas fa-check"></i> Mentoria para developers</li>
+            </ul>
+            <a href="index.html#contact" class="btn btn-outline spc-btn">Solicitar</a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Perguntas frequentes</span>
+          <h2 class="section-title">Tens <span class="highlight">dúvidas?</span></h2>
+        </div>
+        <div class="faq-grid">
+          <div class="faq-item reveal">
+            <button class="faq-question" aria-expanded="false">
+              <span>Como é feito o pagamento?</span> <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>O pagamento é feito em duas fases: 50% no início do projecto e 50% na entrega final. Aceito transferência bancária (BFA, BAI, Banco Sol) e pagamentos via e-kwanza.</p>
+            </div>
+          </div>
+          <div class="faq-item reveal reveal-delay-1">
+            <button class="faq-question" aria-expanded="false">
+              <span>Trabalhas com clientes fora de Angola?</span> <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>Sim! Trabalho remotamente com clientes em qualquer parte do mundo. Para clientes internacionais aceito pagamentos em euros via transferência bancária ou PayPal.</p>
+            </div>
+          </div>
+          <div class="faq-item reveal reveal-delay-2">
+            <button class="faq-question" aria-expanded="false">
+              <span>O que preciso para começar?</span> <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>Basta entrar em contacto com uma descrição do teu projecto. Farei um briefing gratuito, apresentarei um orçamento detalhado e, se aprovado, iniciamos imediatamente.</p>
+            </div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-question" aria-expanded="false">
+              <span>Incluis hospedagem no preço?</span> <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>A hospedagem não está incluída no preço base, mas posso configurá-la por ti. Recomendo serviços como Vercel, Railway ou Render — a maioria com plano gratuito ou de baixo custo.</p>
+            </div>
+          </div>
+          <div class="faq-item reveal reveal-delay-1">
+            <button class="faq-question" aria-expanded="false">
+              <span>Fazes manutenção após a entrega?</span> <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>Sim. O plano Site Institucional inclui 1 mês de suporte gratuito. Após esse período, ofereço pacotes de manutenção mensal a preços acessíveis.</p>
+            </div>
+          </div>
+          <div class="faq-item reveal reveal-delay-2">
+            <button class="faq-question" aria-expanded="false">
+              <span>Posso pedir alterações durante o projecto?</span> <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>Sim, incluo até 2 rondas de revisão em todos os pacotes. Alterações adicionais fora do escopo inicial são orçamentadas separadamente.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="services-final-cta">
+      <div class="container">
+        <div class="final-cta-box reveal">
+          <h2>Pronto para começar?</h2>
+          <p>Conta-me o teu projecto. Respondo em menos de 24 horas.</p>
+          <div class="final-cta-actions">
+            <a href="../../index.html#contact" class="btn btn-primary">
+              <i class="fas fa-paper-plane"></i> Enviar mensagem
+            </a>
+            <a href="https://wa.me/244933170799" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+              <i class="fab fa-whatsapp"></i> WhatsApp directo
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-logo">
+            <h2>Eldissone <span class="highlight">Vilonga</span></h2>
+            <p>Founder at finev &amp; Full Stack Developer</p>
+          </div>
+          <div class="footer-social">
+            <p>Seguir nas redes:</p>
+            <ul>
+              <li><a href="https://www.linkedin.com/in/eldissone-vilonga-210207239" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
+              <li><a href="https://github.com/Eldissone" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a></li>
+              <li><a href="https://www.instagram.com/eldissone/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
+              <li><a href="https://wa.me/244933170799" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2025 Eldissone Vilonga — Todos os direitos reservados.</p>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <button class="back-to-top" id="backToTop" aria-label="Voltar ao topo">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <script type="module" src="services.js"></script>
+</body>
+</html>

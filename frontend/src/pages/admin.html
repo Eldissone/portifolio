@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Eldissone Vilonga</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="admin-body">
+
+  <!-- Login Overlay -->
+  <div id="loginOverlay" class="admin-overlay">
+    <div class="login-card">
+      <h2>Backoffice <span class="highlight">Login</span></h2>
+      <p>Acede para gerir o teu portfolio</p>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" required placeholder="admin@eldissone.dev">
+        </div>
+        <div class="form-group">
+          <label>Palavra-passe</label>
+          <input type="password" id="loginPass" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      </form>
+      <p id="loginError" class="error-msg"></p>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="adminDashboard" class="admin-container hidden">
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <h1>eldissone.<span>admin</span></h1>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-tab="projects"><i class="fas fa-folder"></i> Projectos</button>
+        <button class="nav-btn" data-tab="services"><i class="fas fa-cog"></i> Serviços</button>
+        <button id="logoutBtn" class="nav-btn logout"><i class="fas fa-sign-out-alt"></i> Sair</button>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <h2 id="tabTitle">Gerir Projectos</h2>
+        <div class="admin-header-actions desktop-only">
+          <button class="btn btn-primary btn-sm" id="addNewBtn"><i class="fas fa-plus"></i> Novo</button>
+          <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
+            <i class="fas fa-moon" id="themeIcon"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <!-- Projects List -->
+        <div id="projectsTab" class="tab-content">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Img</th>
+                  <th>Título</th>
+                  <th>Categoria</th>
+                  <th>Tecnologias</th>
+                  <th>Acções</th>
+                </tr>
+              </thead>
+              <tbody id="projectsTableBody">
+                <!-- Loaded via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Services List -->
+        <div id="servicesTab" class="tab-content hidden">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Img</th>
+                  <th>Serviço</th>
+                  <th>Preço (Kz)</th>
+                  <th>Preço (€)</th>
+                  <th>Acções</th>
+                </tr>
+              </thead>
+              <tbody id="servicesTableBody">
+                <!-- Loaded via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal for Add/Edit -->
+  <div id="itemModal" class="modal hidden">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="modalTitle">Adicionar Projecto</h3>
+        <button class="close-modal">&times;</button>
+      </header>
+      <form id="itemForm" class="admin-form">
+        <input type="hidden" name="id" id="itemIdInput">
+        <div class="form-section">
+          <label class="form-label">Media & Assets</label>
+          <div class="upload-container">
+            <input type="file" id="imageUpload" accept="image/*" class="form-input-file">
+            <input type="hidden" name="imageUrl" id="imageUrlInput">
+            <div id="imagePreview" class="image-preview"></div>
+          </div>
+        </div>
+
+        <div id="projectFields">
+          <div class="form-grid">
+            <div class="form-group">
+                <label>Título do Projecto</label>
+                <input type="text" name="title" required>
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <select name="category" required>
+                    <option value="ecommerce">E-commerce</option>
+                    <option value="platform">Plataforma Web</option>
+                    <option value="website">Website</option>
+                    <option value="backend">API & Backend</option>
+                </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+              <label>Resumo Curto (Aparece no Grid)</label>
+              <input type="text" name="description" required>
+          </div>
+
+          <div class="form-group">
+              <label>Visão Geral (Detalhes)</label>
+              <textarea name="overview" rows="3"></textarea>
+          </div>
+
+          <div class="form-grid">
+              <div class="form-group">
+                  <label>O Desafio</label>
+                  <textarea name="challenge" rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                  <label>A Solução</label>
+                  <textarea name="solution" rows="3"></textarea>
+              </div>
+          </div>
+
+          <div class="form-grid">
+              <div class="form-group">
+                  <label>Função / Cargo</label>
+                  <input type="text" name="role" placeholder="ex: Lead Developer">
+              </div>
+              <div class="form-group">
+                  <label>Link do Projecto</label>
+                  <input type="url" name="link" placeholder="https://...">
+              </div>
+          </div>
+
+          <div class="form-group">
+              <label>Tecnologias (separadas por vírgula)</label>
+              <input type="text" name="techStack" placeholder="React, Node.js, Prisma">
+          </div>
+        </div>
+
+        <div id="serviceFields" class="form-grid hidden">
+          <div class="form-group full-width">
+            <label>Título do Serviço</label>
+            <input type="text" name="title" placeholder="Ex: Desenvolvimento Web">
+          </div>
+          <div class="form-group">
+            <label>Preço em Kz</label>
+            <input type="text" name="priceKz" placeholder="50.000 Kz">
+          </div>
+          <div class="form-group">
+            <label>Preço em €</label>
+            <input type="text" name="priceEur" placeholder="50 €">
+          </div>
+          <div class="form-group full-width">
+            <label>Descrição do Serviço</label>
+            <textarea name="description" rows="2"></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Funcionalidades (separadas por vírgula)</label>
+            <input type="text" name="features" placeholder="SEO, Responsivo, CMS">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-block">Guardar Alterações</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
