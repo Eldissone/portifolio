@@ -1,12 +1,11 @@
 // script.js — Portfolio Eldissone Vilonga
-import * as THREE from 'three'
+// script.js — Portfolio Eldissone Vilonga
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
 // ===== DOM =====
-const canvas       = document.querySelector('#webgl')
 const loadingScreen = document.querySelector('.loading-screen')
 const menuToggle   = document.getElementById('menuToggle')
 const navMenu      = document.getElementById('navMenu')
@@ -49,121 +48,6 @@ themeToggles.forEach(btn => {
   })
 })
 
-// ===== THREE.JS SCENE =====
-if (canvas) {
-  const scene  = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100)
-  camera.position.z = 6
-  scene.add(camera)
-
-  const textureLoader = new THREE.TextureLoader()
-  const textures = {
-    processor: textureLoader.load('/assets/img/3d/processor.png'),
-    glass: textureLoader.load('/assets/img/3d/glass_shape.png'),
-    main: textureLoader.load('/assets/img/3d/assets_main.png')
-  }
-
-  // Group to hold everything for scroll animations
-  const mainGroup = new THREE.Group()
-  scene.add(mainGroup)
-
-  const floatingElements = []
-
-  function createFloatingElement(texture, scale, position, parallaxIntensity) {
-    const material = new THREE.SpriteMaterial({ 
-      map: texture, 
-      transparent: true,
-      alphaTest: 0.5, // Remove greyish background
-      depthWrite: false, // Prevent clipping between sprites
-      opacity: 0, 
-    })
-    const sprite = new THREE.Sprite(material)
-    sprite.scale.set(scale, scale, 1)
-    sprite.position.copy(position)
-    
-    const element = {
-      mesh: sprite,
-      originalPos: position.clone(),
-      floatOffset: Math.random() * Math.PI * 2,
-      floatSpeed: 0.5 + Math.random() * 0.5,
-      floatAmplitude: 0.1 + Math.random() * 0.2,
-      parallaxIntensity: parallaxIntensity,
-      repulsion: new THREE.Vector3(0, 0, 0)
-    }
-    
-    mainGroup.add(sprite)
-    floatingElements.push(element)
-    
-    gsap.to(material, { opacity: 1, duration: 1.5, delay: Math.random() * 1 })
-    return element
-  }
-
-  // Initialize elements
-  createFloatingElement(textures.processor, 2.2, new THREE.Vector3(0, 0, 0), 0.1) // Center
-  createFloatingElement(textures.glass, 1.2, new THREE.Vector3(-4, 2.5, -2), 0.25)
-  createFloatingElement(textures.glass, 0.8, new THREE.Vector3(4, -3, -3), 0.4)
-  createFloatingElement(textures.main, 1.8, new THREE.Vector3(5, 3.5, -2.5), 0.2)
-  createFloatingElement(textures.main, 1.2, new THREE.Vector3(-5, -3.2, -2), 0.35)
-
-  // Lights
-  scene.add(new THREE.AmbientLight(0xffffff, 0.8))
-  const pointLight = new THREE.PointLight(0xffffff, 1.5, 20); pointLight.position.set(5, 5, 5); scene.add(pointLight)
-  const pLight1 = new THREE.PointLight(0xFF7A00, 1.2, 15); pLight1.position.set(-3, -2, 2); scene.add(pLight1)
-
-  // Renderer
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true, powerPreference:'high-performance' })
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-
-  // Scroll Triggers
-  gsap.to(mainGroup.rotation, { y: Math.PI * 0.5, scrollTrigger: { trigger:'.section-one', start:'top top', end:'bottom top', scrub:1.5 } })
-  gsap.to(mainGroup.position, { x:1.5, y:-1, scrollTrigger: { trigger:'.section-about', start:'top center', end:'bottom center', scrub:1.5 } })
-  
-  // Animation Loop
-  let time = 0
-  let mouse = new THREE.Vector2(0, 0)
-  document.addEventListener('mousemove', e => {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1
-    gsap.to(pLight1.position, { x: mouse.x * 5, y: mouse.y * 3, duration: 1.5 })
-  })
-
-  function animate() {
-    time += 0.008
-    floatingElements.forEach((el, i) => {
-      const floatY = Math.sin(time * el.floatSpeed + el.floatOffset) * el.floatAmplitude
-      const floatX = Math.cos(time * el.floatSpeed * 0.8 + el.floatOffset) * el.floatAmplitude * 0.5
-      const parallaxX = mouse.x * el.parallaxIntensity * 5
-      const parallaxY = mouse.y * el.parallaxIntensity * 5
-      const dist = el.mesh.position.distanceTo(new THREE.Vector3(mouse.x * 5, mouse.y * 5, 0))
-      if (dist < 3) {
-        const dir = el.mesh.position.clone().sub(new THREE.Vector3(mouse.x * 5, mouse.y * 5, 0)).normalize()
-        const force = (3 - dist) * 0.05
-        el.repulsion.add(dir.multiplyScalar(force))
-      }
-      el.repulsion.multiplyScalar(0.9)
-      el.mesh.position.x = el.originalPos.x + floatX + parallaxX + el.repulsion.x
-      el.mesh.position.y = el.originalPos.y + floatY + parallaxY + el.repulsion.y
-      el.mesh.material.rotation = Math.sin(time * 0.5 + i) * 0.05
-    })
-    renderer.render(scene, camera)
-    requestAnimationFrame(animate)
-  }
-  animate()
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-  })
-
-  // ===== SCROLL TRIGGERS (THREE.JS) =====
-  gsap.to(mainGroup.rotation, { y: Math.PI * 0.5, scrollTrigger: { trigger:'.section-one', start:'top top', end:'bottom top', scrub:1.5 } })
-  gsap.to(mainGroup.position, { x:1.5, y:-1, scrollTrigger: { trigger:'.section-about', start:'top center', end:'bottom center', scrub:1.5 } })
-  gsap.to(mainGroup.rotation, { x:0.2, y:Math.PI, scrollTrigger: { trigger:'.section-services', start:'top center', end:'bottom center', scrub:1.5 } })
-  gsap.to(mainGroup.position, { x:0, y:-1.5, z:2, scrollTrigger: { trigger:'.section-four', start:'top center', end:'bottom bottom', scrub:1.5 } })
-}
-
 // ===== LOADING & ENTRANCE =====
 window.addEventListener('load', () => {
   setTimeout(() => {
@@ -181,9 +65,44 @@ window.addEventListener('load', () => {
         gsap.from('.hero-stat-card', {
           scale: 0.8, opacity: 0, duration: 1, stagger: 0.2, ease: 'back.out(1.7)', delay: 0.8
         })
+        gsap.from('.hero-img-container', {
+          y: 100, opacity: 0, duration: 1.5, ease: 'power4.out', delay: 1
+        })
       }
     })
   }, 800)
+})
+
+
+// ===== MOUSE FOLLOW (Hero Image) =====
+window.addEventListener('mousemove', (e) => {
+  const x = (e.clientX / window.innerWidth - 0.5) * 40
+  const y = (e.clientY / window.innerHeight - 0.5) * 40
+  
+  // Rotate the circle frame
+  gsap.to('.hero-circle', {
+    rotateY: x,
+    rotateX: -y,
+    duration: 1.2,
+    ease: 'power2.out'
+  })
+  
+  // Shifting the image inside for parallax depth
+  gsap.to('.hero-img', {
+    x: x * 0.8,
+    y: y * 0.8,
+    scale: 1.1, // Keep it slightly zoomed to hide edges during shift
+    duration: 1.5,
+    ease: 'power2.out'
+  })
+
+  // Add subtle movement to stat cards
+  gsap.to('.hero-stat-card', {
+    x: (e.clientX / window.innerWidth - 0.5) * 20,
+    y: (e.clientY / window.innerHeight - 0.5) * 20,
+    duration: 2,
+    ease: 'power3.out'
+  })
 })
 
 
