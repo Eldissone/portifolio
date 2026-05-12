@@ -50,80 +50,143 @@ themeToggles.forEach(btn => {
 })
 
 // ===== THREE.JS SCENE =====
-const scene  = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 100)
-camera.position.z = 5
-scene.add(camera)
+if (canvas) {
+  const scene  = new THREE.Scene()
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100)
+  camera.position.z = 6
+  scene.add(camera)
 
-const primaryColor   = new THREE.Color('#b86e2e')
-const secondaryColor = new THREE.Color('#c29670')
+  const textureLoader = new THREE.TextureLoader()
+  const textures = {
+    processor: textureLoader.load('/assets/img/3d/processor.png'),
+    glass: textureLoader.load('/assets/img/3d/glass_shape.png'),
+    main: textureLoader.load('/assets/img/3d/assets_main.png')
+  }
 
-const geometry = new THREE.IcosahedronGeometry(1.4, 2)
-const material = new THREE.MeshPhysicalMaterial({
-  color: primaryColor,
-  metalness: 0.6,
-  roughness: 0.3,
-  clearcoat: 0.8,
-  clearcoatRoughness: 0.2,
-})
-const mesh = new THREE.Mesh(geometry, material)
-scene.add(mesh)
+  // Group to hold everything for scroll animations
+  const mainGroup = new THREE.Group()
+  scene.add(mainGroup)
 
-const wireframeGeom = new THREE.IcosahedronGeometry(1.46, 2)
-const wireframeMat  = new THREE.MeshBasicMaterial({
-  color: secondaryColor,
-  wireframe: true,
-  transparent: true,
-  opacity: 0.25
-})
-const wireframe = new THREE.Mesh(wireframeGeom, wireframeMat)
-scene.add(wireframe)
+  const floatingElements = []
 
-// Orbiting small geometries
-const smallGeometries = []
-const gTypes = [
-  new THREE.TetrahedronGeometry(0.35, 0),
-  new THREE.OctahedronGeometry(0.28, 0),
-  new THREE.DodecahedronGeometry(0.3, 0)
-]
-for (let i = 0; i < 5; i++) {
-  const sm = new THREE.MeshPhysicalMaterial({ color: i % 2 === 0 ? primaryColor : secondaryColor, metalness:0.5, roughness:0.4 })
-  const smMesh = new THREE.Mesh(gTypes[i % gTypes.length], sm)
-  const angle  = (i / 5) * Math.PI * 2
-  const radius = 2.4
-  smMesh.position.x = Math.cos(angle) * radius
-  smMesh.position.z = Math.sin(angle) * radius
-  scene.add(smMesh)
-  smallGeometries.push({ mesh: smMesh, angle, radius, speed: 0.4 + Math.random() * 0.4 })
+  function createFloatingElement(texture, scale, position, parallaxIntensity) {
+    const material = new THREE.SpriteMaterial({ 
+      map: texture, 
+      transparent: true,
+      alphaTest: 0.5, // Remove greyish background
+      depthWrite: false, // Prevent clipping between sprites
+      opacity: 0, 
+    })
+    const sprite = new THREE.Sprite(material)
+    sprite.scale.set(scale, scale, 1)
+    sprite.position.copy(position)
+    
+    const element = {
+      mesh: sprite,
+      originalPos: position.clone(),
+      floatOffset: Math.random() * Math.PI * 2,
+      floatSpeed: 0.5 + Math.random() * 0.5,
+      floatAmplitude: 0.1 + Math.random() * 0.2,
+      parallaxIntensity: parallaxIntensity,
+      repulsion: new THREE.Vector3(0, 0, 0)
+    }
+    
+    mainGroup.add(sprite)
+    floatingElements.push(element)
+    
+    gsap.to(material, { opacity: 1, duration: 1.5, delay: Math.random() * 1 })
+    return element
+  }
+
+  // Initialize elements
+  createFloatingElement(textures.processor, 2.2, new THREE.Vector3(0, 0, 0), 0.1) // Center
+  createFloatingElement(textures.glass, 1.2, new THREE.Vector3(-4, 2.5, -2), 0.25)
+  createFloatingElement(textures.glass, 0.8, new THREE.Vector3(4, -3, -3), 0.4)
+  createFloatingElement(textures.main, 1.8, new THREE.Vector3(5, 3.5, -2.5), 0.2)
+  createFloatingElement(textures.main, 1.2, new THREE.Vector3(-5, -3.2, -2), 0.35)
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8))
+  const pointLight = new THREE.PointLight(0xffffff, 1.5, 20); pointLight.position.set(5, 5, 5); scene.add(pointLight)
+  const pLight1 = new THREE.PointLight(0xFF7A00, 1.2, 15); pLight1.position.set(-3, -2, 2); scene.add(pLight1)
+
+  // Renderer
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true, powerPreference:'high-performance' })
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+  // Scroll Triggers
+  gsap.to(mainGroup.rotation, { y: Math.PI * 0.5, scrollTrigger: { trigger:'.section-one', start:'top top', end:'bottom top', scrub:1.5 } })
+  gsap.to(mainGroup.position, { x:1.5, y:-1, scrollTrigger: { trigger:'.section-about', start:'top center', end:'bottom center', scrub:1.5 } })
+  
+  // Animation Loop
+  let time = 0
+  let mouse = new THREE.Vector2(0, 0)
+  document.addEventListener('mousemove', e => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1
+    gsap.to(pLight1.position, { x: mouse.x * 5, y: mouse.y * 3, duration: 1.5 })
+  })
+
+  function animate() {
+    time += 0.008
+    floatingElements.forEach((el, i) => {
+      const floatY = Math.sin(time * el.floatSpeed + el.floatOffset) * el.floatAmplitude
+      const floatX = Math.cos(time * el.floatSpeed * 0.8 + el.floatOffset) * el.floatAmplitude * 0.5
+      const parallaxX = mouse.x * el.parallaxIntensity * 5
+      const parallaxY = mouse.y * el.parallaxIntensity * 5
+      const dist = el.mesh.position.distanceTo(new THREE.Vector3(mouse.x * 5, mouse.y * 5, 0))
+      if (dist < 3) {
+        const dir = el.mesh.position.clone().sub(new THREE.Vector3(mouse.x * 5, mouse.y * 5, 0)).normalize()
+        const force = (3 - dist) * 0.05
+        el.repulsion.add(dir.multiplyScalar(force))
+      }
+      el.repulsion.multiplyScalar(0.9)
+      el.mesh.position.x = el.originalPos.x + floatX + parallaxX + el.repulsion.x
+      el.mesh.position.y = el.originalPos.y + floatY + parallaxY + el.repulsion.y
+      el.mesh.material.rotation = Math.sin(time * 0.5 + i) * 0.05
+    })
+    renderer.render(scene, camera)
+    requestAnimationFrame(animate)
+  }
+  animate()
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+  })
+
+  // ===== SCROLL TRIGGERS (THREE.JS) =====
+  gsap.to(mainGroup.rotation, { y: Math.PI * 0.5, scrollTrigger: { trigger:'.section-one', start:'top top', end:'bottom top', scrub:1.5 } })
+  gsap.to(mainGroup.position, { x:1.5, y:-1, scrollTrigger: { trigger:'.section-about', start:'top center', end:'bottom center', scrub:1.5 } })
+  gsap.to(mainGroup.rotation, { x:0.2, y:Math.PI, scrollTrigger: { trigger:'.section-services', start:'top center', end:'bottom center', scrub:1.5 } })
+  gsap.to(mainGroup.position, { x:0, y:-1.5, z:2, scrollTrigger: { trigger:'.section-four', start:'top center', end:'bottom bottom', scrub:1.5 } })
 }
 
-// Lights
-scene.add(new THREE.AmbientLight(0xffffff, 0.7))
-const keyLight  = new THREE.DirectionalLight(0xffffff, 1.0); keyLight.position.set(5,5,5); scene.add(keyLight)
-const fillLight = new THREE.DirectionalLight(0xc29670, 0.4); fillLight.position.set(-5,3,2); scene.add(fillLight)
-const pLight1   = new THREE.PointLight(0xb86e2e, 0.8, 10); pLight1.position.set(3,2,1); scene.add(pLight1)
-const pLight2   = new THREE.PointLight(0xc29670, 0.5, 10); pLight2.position.set(-3,-1,2); scene.add(pLight2)
-
-// Renderer
-const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true, powerPreference:'high-performance' })
-renderer.setSize(window.innerWidth, window.innerHeight)
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-
-// ===== LOADING =====
+// ===== LOADING & ENTRANCE =====
 window.addEventListener('load', () => {
   setTimeout(() => {
     gsap.to(loadingScreen, {
-      opacity: 0, duration: 0.5,
-      onComplete: () => loadingScreen.classList.add('hidden')
+      opacity: 0, duration: 0.8,
+      onComplete: () => {
+        loadingScreen.classList.add('hidden')
+        // Entrance Animations
+        gsap.from('.hero-title span, .hero-title em', {
+          y: 60, opacity: 0, duration: 1.2, stagger: 0.15, ease: 'power4.out'
+        })
+        gsap.from('.hero-description, .hero-tagline, .hero-actions', {
+          y: 30, opacity: 0, duration: 1, stagger: 0.1, ease: 'power3.out', delay: 0.5
+        })
+        gsap.from('.hero-stat-card', {
+          scale: 0.8, opacity: 0, duration: 1, stagger: 0.2, ease: 'back.out(1.7)', delay: 0.8
+        })
+      }
     })
   }, 800)
 })
 
-// ===== SCROLL TRIGGERS (THREE.JS) =====
-gsap.to(mesh.rotation, { y: Math.PI * 2, scrollTrigger: { trigger:'.section-one', start:'top top', end:'bottom top', scrub:1.5 } })
-gsap.to(mesh.position, { x:2, y:-1, scrollTrigger: { trigger:'.section-about', start:'top center', end:'bottom center', scrub:1.5 } })
-gsap.to(mesh.rotation, { x:Math.PI*1.5, y:Math.PI*2.5, scrollTrigger: { trigger:'.section-services', start:'top center', end:'bottom center', scrub:1.5 } })
-gsap.to(mesh.position, { x:0, y:-2, z:3, scrollTrigger: { trigger:'.section-four', start:'top center', end:'bottom bottom', scrub:1.5 } })
+
 
 // ===== MOBILE MENU =====
 menuToggle.addEventListener('click', () => {
@@ -267,48 +330,49 @@ document.querySelectorAll('.skill-card').forEach(card => {
   card.addEventListener('mouseleave', () => gsap.to(card, { scale:1,    duration:0.3, ease:'power2.out' }))
 })
 
-// ===== MOUSE PARALLAX =====
+
+// ===== MOUSE INTERACTION (UI) =====
+const heroGlow = document.getElementById('heroGlow')
 document.addEventListener('mousemove', e => {
-  const mx = (e.clientX / window.innerWidth)  * 2 - 1
-  const my = -(e.clientY / window.innerHeight) * 2 + 1
-  gsap.to(mesh.rotation, { x: my * 0.08, y: mx * 0.08, duration:1 })
-  pLight1.position.x = mx * 3
-  pLight1.position.y = my * 2
-  pLight2.position.x = -mx * 3
-  pLight2.position.y = -my * 2
-})
+  // 1. Hero Glow Follow
+  if (heroGlow) {
+    gsap.to(heroGlow, { 
+      x: e.clientX - 300, 
+      y: e.clientY - 300, 
+      opacity: 0.6, 
+      duration: 1.2, 
+      ease: 'power2.out' 
+    })
+  }
 
-// ===== RESIZE =====
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight
-  camera.updateProjectionMatrix()
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-})
-
-// ===== ANIMATION LOOP =====
-let time = 0
-function animate() {
-  time += 0.005
-  mesh.rotation.x = time * 0.08
-  mesh.rotation.y = time * 0.12
-  wireframe.rotation.x = -time * 0.06
-  wireframe.rotation.y = -time * 0.10
-  smallGeometries.forEach((g, i) => {
-    g.angle += time * 0.04 * g.speed
-    g.mesh.position.x = Math.cos(g.angle + time) * g.radius
-    g.mesh.position.z = Math.sin(g.angle + time) * g.radius
-    g.mesh.position.y = Math.sin(time * g.speed + i) * 0.5
-    g.mesh.rotation.x = time * g.speed
-    g.mesh.rotation.y = time * g.speed * 0.7
+  // 2. Hero Stat Cards Tilt
+  document.querySelectorAll('.hero-stat-card').forEach(card => {
+    const rect = card.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    const tiltX = (e.clientY - centerY) * 0.05
+    const tiltY = (e.clientX - centerX) * -0.05
+    gsap.to(card, {
+      rotateX: tiltX, rotateY: tiltY,
+      x: (e.clientX - centerX) * 0.02,
+      y: (e.clientY - centerY) * 0.02,
+      duration: 0.8, ease: 'power2.out'
+    })
   })
-  pLight1.intensity = 0.8 + Math.sin(time * 2) * 0.15
-  pLight2.intensity = 0.5 + Math.sin(time * 2.5) * 0.1
-  renderer.render(scene, camera)
-  requestAnimationFrame(animate)
-}
-animate()
-ScrollTrigger.refresh()
+})
+
+// ===== MAGNETIC BUTTONS =====
+document.querySelectorAll('.btn, .hero-social-handle, .theme-toggle, .nav-link').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    const rect = el.getBoundingClientRect()
+    const x = e.clientX - rect.left - rect.width / 2
+    const y = e.clientY - rect.top - rect.height / 2
+    gsap.to(el, { x: x * 0.35, y: y * 0.35, duration: 0.4, ease: 'power2.out' })
+  })
+  el.addEventListener('mouseleave', () => {
+    gsap.to(el, { x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.4)' })
+  })
+})
 
 // Lazy load images
 document.querySelectorAll('img[loading="lazy"]').forEach(img => { img.loading = 'lazy' })

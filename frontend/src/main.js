@@ -202,7 +202,7 @@ function prepareWhatsAppMessage(name, email, message) {
         🌍 *Enviado de:* ${window.location.hostname}
 
         _Esta mensagem foi enviada automaticamente do seu portfólio online._`;
-    }
+}
 
 async function prepareEmailData(name, email, message) {
     const timestamp = new Date().toLocaleString('pt-AO', {
@@ -460,7 +460,7 @@ function fireConfetti() {
     // Primeira explosão (centro)
     confetti({
         ...defaults,
-        colors: ['#6c63ff', '#ff6584', '#ffffff']
+        colors: ['#ffffffff', '#ff6584', '#ffffff']
     });
 
     // Explosões laterais
@@ -471,7 +471,7 @@ function fireConfetti() {
             angle: 60,
             spread: 55,
             origin: { x: 0, y: 0.6 },
-            colors: ['#6c63ff']
+            colors: ['#ffffffff']
         });
 
         confetti({
@@ -490,7 +490,7 @@ function fireConfetti() {
             particleCount: 150,
             spread: 100,
             origin: { y: 0.5 },
-            colors: ['#6c63ff', '#ff6584', '#4CAF50', '#2196F3']
+            colors: ['#ffffffff', '#ff6584', '#4CAF50', '#ffffffff']
         });
     }, 500);
 }
