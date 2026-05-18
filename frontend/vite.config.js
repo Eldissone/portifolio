@@ -4,6 +4,9 @@ import vue from '@vitejs/plugin-vue'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  preview: {
+    allowedHosts: ['eldissone.onrender.com']
+  },
   build: {
     rollupOptions: {
       input: {
