@@ -1,6 +1,7 @@
 // admin.js — Lógica do Backoffice
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const IMAGE_BASE = import.meta.env.VITE_IMAGE_BASE_URL || 'http://localhost:3000';
 
 // State
 let token = localStorage.getItem('admin_token');
@@ -97,7 +98,7 @@ const loadData = async () => {
 const renderProjects = (projects) => {
   projectsTableBody.innerHTML = projects.map(p => `
     <tr>
-      <td>${p.imageUrl ? `<img src="http://localhost:3000${p.imageUrl}" class="td-thumb">` : '-'}</td>
+      <td>${p.imageUrl ? `<img src="${IMAGE_BASE}${p.imageUrl}" class="td-thumb">` : '-'}</td>
       <td><strong>${p.title}</strong></td>
       <td><span class="tag-category">${p.category}</span></td>
       <td>${p.techStack.join(', ')}</td>
@@ -113,7 +114,7 @@ const renderServices = (services) => {
   const servicesTableBody = document.getElementById('servicesTableBody');
   servicesTableBody.innerHTML = services.map(s => `
     <tr>
-      <td>${s.imageUrl ? `<img src="http://localhost:3000${s.imageUrl}" class="td-thumb">` : '-'}</td>
+      <td>${s.imageUrl ? `<img src="${IMAGE_BASE}${s.imageUrl}" class="td-thumb">` : '-'}</td>
       <td><strong>${s.title}</strong></td>
       <td>${s.priceKz}</td>
       <td>${s.priceEur}</td>
@@ -138,7 +139,7 @@ const editItem = async (id) => {
   // Fill common fields
   imageUrlInput.value = item.imageUrl || '';
   if (item.imageUrl) {
-    imagePreview.innerHTML = `<img src="http://localhost:3000${item.imageUrl}" style="max-width:100px; border-radius:8px; margin-top:10px;">`;
+    imagePreview.innerHTML = `<img src="${IMAGE_BASE}${item.imageUrl}" style="max-width:100px; border-radius:8px; margin-top:10px;">`;
   } else {
     imagePreview.innerHTML = '';
   }
@@ -193,7 +194,7 @@ imageUpload.addEventListener('change', async (e) => {
     const data = await res.json();
     if (data.imageUrl) {
       imageUrlInput.value = data.imageUrl;
-      imagePreview.innerHTML = `<img src="http://localhost:3000${data.imageUrl}" style="max-width:100px; border-radius:8px; margin-top:10px;">`;
+      imagePreview.innerHTML = `<img src="${IMAGE_BASE}${data.imageUrl}" style="max-width:100px; border-radius:8px; margin-top:10px;">`;
     }
   } catch (err) {
     alert('Erro no upload');
