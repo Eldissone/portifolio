@@ -128,8 +128,12 @@ app.post('/api/upload', authenticate, upload.single('image'), async (req, res) =
     });
 
   if (error) {
-    console.error('Supabase upload error:', error);
-    return res.status(500).json({ error: 'Erro ao fazer upload da imagem' });
+    console.error('Supabase upload error:', JSON.stringify(error));
+    return res.status(500).json({
+      error: 'Erro ao fazer upload da imagem',
+      detail: error.message,
+      statusCode: error.statusCode
+    });
   }
 
   const { data: urlData } = supabase.storage
