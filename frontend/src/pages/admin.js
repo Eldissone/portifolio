@@ -207,6 +207,10 @@ imageUpload.addEventListener('change', async (e) => {
 // ===== MODAL LOGIC =====
 addNewBtn.addEventListener('click', () => {
   itemForm.reset();
+  // Limpar campos ocultos explicitamente para garantir que é um INSERT e não UPDATE
+  document.getElementById('itemIdInput').value = '';
+  document.getElementById('imageUrlInput').value = '';
+  
   imagePreview.innerHTML = '';
   document.getElementById('modalTitle').textContent = `Novo ${currentTab === 'projects' ? 'Projecto' : 'Serviço'}`;
   
