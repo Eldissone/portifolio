@@ -9,13 +9,25 @@ import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
+
+// Origens permitidas (dev + produção)
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://eldissone.onrender.com',
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 // Ensure upload directory exists
 const uploadDir = 'uploads';
@@ -28,7 +40,17 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permitir requests sem origin (ex: Postman, servidor-a-servidor)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS bloqueado para: ${origin}`));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
@@ -123,6 +145,29 @@ app.delete('/api/services/:id', authenticate, async (req, res) => {
   res.status(204).send();
 });
 
+// Servir o frontend (dist) em produção
+const distPath = path.join(__dirname, '../../frontend/dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  // Redirecionar páginas HTML específicas
+  app.get('/src/pages/admin.html', (req, res) => {
+    res.sendFile(path.join(distPath, 'src/pages/admin.html'));
+  });
+  app.get('/src/pages/servicos.html', (req, res) => {
+    res.sendFile(path.join(distPath, 'src/pages/servicos.html'));
+  });
+  app.get('/src/pages/projeto.html', (req, res) => {
+    res.sendFile(path.join(distPath, 'src/pages/projeto.html'));
+  });
+  // Fallback para o index principal
+  app.get('*', (req, res) => {
+    // Não interceptar rotas de API
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return;
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+  console.log(`📁 A servir frontend de: ${distPath}`);
+}
+
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`✅ Servidor a correr na porta ${PORT}`);
 });
