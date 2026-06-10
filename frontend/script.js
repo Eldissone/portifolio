@@ -174,6 +174,7 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el))
 // ===== PROJECTS LOADING & FILTERING =====
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const IMAGE_BASE = import.meta.env.VITE_IMAGE_BASE_URL || 'http://localhost:3000';
+const getImageUrl = (url) => url?.startsWith('http') ? url : `${IMAGE_BASE}${url}`;
 const projectsGrid = document.getElementById('projectsGrid');
 const filterButtons = document.querySelectorAll('.filter-btn');
 
@@ -194,7 +195,7 @@ function renderProjects(projects) {
     <div class="project-card reveal" data-category="${p.category}">
       <div class="project-image">
         <span class="project-tag-overlay">${p.category}</span>
-        ${p.imageUrl ? `<img src="${IMAGE_BASE}${p.imageUrl}" alt="${p.title}">` : '<div class="no-image">Sem Imagem</div>'}
+        ${p.imageUrl ? `<img src="${getImageUrl(p.imageUrl)}" alt="${p.title}">` : '<div class="no-image">Sem Imagem</div>'}
         <div class="project-overlay">
           <a href="src/pages/projeto.html?id=${p.id}" class="project-link-icon" aria-label="Ver Detalhes">
             <i class="fas fa-eye"></i>

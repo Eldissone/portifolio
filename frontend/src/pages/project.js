@@ -71,6 +71,7 @@ backToTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smo
 // ===== DYNAMIC LOADING =====
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const IMAGE_BASE = import.meta.env.VITE_IMAGE_BASE_URL || 'http://localhost:3000';
+const getImageUrl = (url) => url?.startsWith('http') ? url : `${IMAGE_BASE}${url}`;
 
 async function loadProjectDetails() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -111,7 +112,7 @@ function renderDetails(project) {
 
     const mainImg = document.querySelector('#projectMainImage img');
     if (project.imageUrl) {
-        mainImg.src = `${IMAGE_BASE}${project.imageUrl}`;
+        mainImg.src = getImageUrl(project.imageUrl);
         mainImg.alt = project.title;
     }
 

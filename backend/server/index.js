@@ -10,6 +10,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
@@ -21,6 +22,13 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
+// Supabase Storage client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+const BUCKET = process.env.SUPABASE_BUCKET || 'portfolio-uploads';
+
 // Origens permitidas (dev + produção)
 const allowedOrigins = [
   'http://localhost:5173',
@@ -29,16 +37,9 @@ const allowedOrigins = [
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
-// Ensure upload directory exists
-const uploadDir = 'uploads';
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+// Multer — memória (não guarda em disco)
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Multer Storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
-});
-const upload = multer({ storage });
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -52,7 +53,6 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
 
 // Middlewares
 const authenticate = async (req, res, next) => {
@@ -105,10 +105,29 @@ app.delete('/api/projects/:id', authenticate, async (req, res) => {
   res.status(204).send();
 });
 
-// Upload Route
-app.post('/api/upload', authenticate, upload.single('image'), (req, res) => {
+// Upload Route — Supabase Storage
+app.post('/api/upload', authenticate, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Nenhuma imagem enviada' });
-  res.json({ imageUrl: `/uploads/${req.file.filename}` });
+
+  const fileName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, '-')}`;
+
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .upload(fileName, req.file.buffer, {
+      contentType: req.file.mimetype,
+      upsert: false
+    });
+
+  if (error) {
+    console.error('Supabase upload error:', error);
+    return res.status(500).json({ error: 'Erro ao fazer upload da imagem' });
+  }
+
+  const { data: urlData } = supabase.storage
+    .from(BUCKET)
+    .getPublicUrl(fileName);
+
+  res.json({ imageUrl: urlData.publicUrl });
 });
 
 // Services API
