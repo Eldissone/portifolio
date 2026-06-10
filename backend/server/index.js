@@ -109,7 +109,16 @@ app.delete('/api/projects/:id', authenticate, async (req, res) => {
 app.post('/api/upload', authenticate, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Nenhuma imagem enviada' });
 
-  const fileName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, '-')}`;
+  // Sanitizar nome: remover acentos, espaços e caracteres especiais
+  const sanitized = req.file.originalname
+    .normalize('NFD')                        // decompõe acentos (ã → a + ~)
+    .replace(/[\u0300-\u036f]/g, '')         // remove os diacríticos
+    .replace(/[^a-zA-Z0-9._-]/g, '_')       // substitui tudo o resto por _
+    .replace(/__+/g, '_')                    // colapsa múltiplos _
+    .toLowerCase();
+
+  const fileName = `${Date.now()}-${sanitized}`;
+
 
   const { data, error } = await supabase.storage
     .from(BUCKET)
