@@ -33,7 +33,7 @@ const BUCKET = process.env.SUPABASE_BUCKET || 'portfolio-uploads';
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4173',
-  'https://eldissone.onrender.com',
+  'https://www.eldissone.com',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
