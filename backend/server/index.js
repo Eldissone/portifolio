@@ -201,6 +201,10 @@ if (fs.existsSync(distPath)) {
   console.log(`📁 A servir frontend de: ${distPath}`);
 }
 
-app.listen(PORT, () => {
-  console.log(`✅ Servidor a correr na porta ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`✅ Servidor a correr na porta ${PORT}`);
+  });
+}
+
+export default app;
