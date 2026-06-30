@@ -6,7 +6,8 @@
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
     "db:push": "prisma db push",
-    "db:seed": "node scripts/seed.js"
+    "db:seed": "node scripts/seed.js",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
