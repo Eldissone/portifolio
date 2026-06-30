@@ -23,10 +23,10 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
 // Supabase Storage client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
+const supabaseUrl = process.env.SUPABASE_URL || process.env.portifolio_db_SUPABASE_URL || process.env.NEXT_PUBLIC_portifolio_db_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY || process.env.portifolio_db_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_portifolio_db_SUPABASE_ANON_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 const BUCKET = process.env.SUPABASE_BUCKET || 'portfolio-uploads';
 
 // Origens permitidas (dev + produção)
