@@ -34,6 +34,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4173',
   'https://www.eldissone.com',
+  'https://eldissone.com',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
