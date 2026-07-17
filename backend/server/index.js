@@ -10,7 +10,6 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
@@ -22,12 +21,48 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
-// Supabase Storage client
-const supabaseUrl = process.env.SUPABASE_URL || process.env.portifolio_db_SUPABASE_URL || process.env.NEXT_PUBLIC_portifolio_db_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY || process.env.portifolio_db_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_portifolio_db_SUPABASE_ANON_KEY;
+// Configurar pasta de uploads
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('📁 Pasta de uploads criada:', uploadsDir);
+}
 
-const supabase = createClient(supabaseUrl, supabaseKey);
-const BUCKET = process.env.SUPABASE_BUCKET || 'portfolio-uploads';
+// Configurar armazenamento de ficheiros
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    // Sanitizar nome: remover acentos, espaços e caracteres especiais
+    const sanitized = file.originalname
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/__+/g, '_')
+      .toLowerCase();
+    
+    const fileName = `${Date.now()}-${sanitized}`;
+    cb(null, fileName);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de ficheiro não suportado'));
+    }
+  }
+});
+
+
+// Servir ficheiros da pasta uploads
+app.use('/uploads', express.static(uploadsDir));
 
 // Origens permitidas (dev + produção)
 const allowedOrigins = [
@@ -37,10 +72,6 @@ const allowedOrigins = [
   'https://eldissone.com',
   process.env.FRONTEND_URL
 ].filter(Boolean);
-
-// Multer — memória (não guarda em disco)
-const upload = multer({ storage: multer.memoryStorage() });
-
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -107,41 +138,23 @@ app.delete('/api/projects/:id', authenticate, async (req, res) => {
 });
 
 // Upload Route — Supabase Storage
+// Upload Route — Armazenamento Local
 app.post('/api/upload', authenticate, upload.single('image'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'Nenhuma imagem enviada' });
-
-  // Sanitizar nome: remover acentos, espaços e caracteres especiais
-  const sanitized = req.file.originalname
-    .normalize('NFD')                        // decompõe acentos (ã → a + ~)
-    .replace(/[\u0300-\u036f]/g, '')         // remove os diacríticos
-    .replace(/[^a-zA-Z0-9._-]/g, '_')       // substitui tudo o resto por _
-    .replace(/__+/g, '_')                    // colapsa múltiplos _
-    .toLowerCase();
-
-  const fileName = `${Date.now()}-${sanitized}`;
-
-
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
-    .upload(fileName, req.file.buffer, {
-      contentType: req.file.mimetype,
-      upsert: false
-    });
-
-  if (error) {
-    console.error('Supabase upload error:', JSON.stringify(error));
-    return res.status(500).json({
-      error: 'Erro ao fazer upload da imagem',
-      detail: error.message,
-      statusCode: error.statusCode
-    });
+  if (!req.file) {
+    return res.status(400).json({ error: 'Nenhuma imagem enviada' });
   }
 
-  const { data: urlData } = supabase.storage
-    .from(BUCKET)
-    .getPublicUrl(fileName);
+  console.log('📤 Upload bem-sucedido:', {
+    fileName: req.file.filename,
+    size: req.file.size,
+    mimetype: req.file.mimetype
+  });
 
-  res.json({ imageUrl: urlData.publicUrl });
+  // URL relativa da imagem
+  const imageUrl = `/uploads/${req.file.filename}`;
+  
+  console.log('🔗 URL da imagem:', imageUrl);
+  res.json({ imageUrl });
 });
 
 // Services API
@@ -203,7 +216,9 @@ if (fs.existsSync(distPath)) {
 
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
+    console.log(`\n${'='.repeat(50)}`);
     console.log(`✅ Servidor a correr na porta ${PORT}`);
+    console.log(`${'='.repeat(50)}\n`);
   });
 }
 
