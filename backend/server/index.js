@@ -10,6 +10,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
@@ -21,31 +22,21 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
-// Configurar pasta de uploads
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('📁 Pasta de uploads criada:', uploadsDir);
+// Inicializar Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const bucketName = process.env.SUPABASE_BUCKET || 'portfolio-uploads';
+
+let supabase;
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+  console.log('✅ Supabase conectado');
+} else {
+  console.warn('⚠️  Variáveis Supabase não configuradas');
 }
 
-// Configurar armazenamento de ficheiros
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    // Sanitizar nome: remover acentos, espaços e caracteres especiais
-    const sanitized = file.originalname
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9._-]/g, '_')
-      .replace(/__+/g, '_')
-      .toLowerCase();
-    
-    const fileName = `${Date.now()}-${sanitized}`;
-    cb(null, fileName);
-  }
-});
+// Configurar multer para armazenamento em memória
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
@@ -59,10 +50,6 @@ const upload = multer({
     }
   }
 });
-
-
-// Servir ficheiros da pasta uploads
-app.use('/uploads', express.static(uploadsDir));
 
 // Origens permitidas (dev + produção)
 const allowedOrigins = [
@@ -138,23 +125,56 @@ app.delete('/api/projects/:id', authenticate, async (req, res) => {
 });
 
 // Upload Route — Supabase Storage
-// Upload Route — Armazenamento Local
 app.post('/api/upload', authenticate, upload.single('image'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhuma imagem enviada' });
+    }
+
+    if (!supabase) {
+      return res.status(500).json({ error: 'Armazenamento não configurado' });
+    }
+
+    // Sanitizar nome do ficheiro
+    const sanitized = req.file.originalname
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/__+/g, '_')
+      .toLowerCase();
+    
+    const fileName = `${Date.now()}-${sanitized}`;
+    const filePath = `portfolio/${fileName}`;
+
+    // Upload para Supabase Storage
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false
+      });
+
+    if (error) {
+      console.error('❌ Erro ao fazer upload:', error);
+      return res.status(500).json({ error: 'Erro ao fazer upload da imagem' });
+    }
+
+    // Obter URL pública
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(filePath);
+
+    console.log('📤 Upload para Supabase bem-sucedido:', {
+      fileName: fileName,
+      size: req.file.size,
+      url: publicUrl
+    });
+
+    res.json({ imageUrl: publicUrl });
+  } catch (error) {
+    console.error('❌ Erro no upload:', error);
+    res.status(500).json({ error: 'Erro ao processar upload' });
   }
-
-  console.log('📤 Upload bem-sucedido:', {
-    fileName: req.file.filename,
-    size: req.file.size,
-    mimetype: req.file.mimetype
-  });
-
-  // URL relativa da imagem
-  const imageUrl = `/uploads/${req.file.filename}`;
-  
-  console.log('🔗 URL da imagem:', imageUrl);
-  res.json({ imageUrl });
 });
 
 // Services API
@@ -208,7 +228,7 @@ if (fs.existsSync(distPath)) {
   // Fallback para o index principal
   app.get('*', (req, res) => {
     // Não interceptar rotas de API
-    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return;
+    if (req.path.startsWith('/api')) return;
     res.sendFile(path.join(distPath, 'index.html'));
   });
   console.log(`📁 A servir frontend de: ${distPath}`);
