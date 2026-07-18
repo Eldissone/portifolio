@@ -160,9 +160,16 @@ app.post('/api/upload', authenticate, upload.single('image'), async (req, res) =
     }
 
     // Obter URL pública
-    const { data: { publicUrl } } = supabase.storage
+    const { data } = supabase.storage
       .from(bucketName)
       .getPublicUrl(filePath);
+
+    const publicUrl = data?.publicUrl;
+
+    if (!publicUrl) {
+      console.error('❌ Erro ao gerar URL pública');
+      return res.status(500).json({ error: 'Erro ao gerar URL da imagem' });
+    }
 
     console.log('📤 Upload para Supabase bem-sucedido:', {
       fileName: fileName,
