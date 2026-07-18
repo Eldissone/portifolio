@@ -73,6 +73,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Middlewares
 const authenticate = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -89,39 +94,64 @@ const authenticate = async (req, res, next) => {
 
 // Auth Routes
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { email } });
-  
-  if (user && await bcrypt.compare(password, user.password)) {
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
-  } else {
-    res.status(401).json({ error: 'Credenciais inválidas' });
+  try {
+    const { email, password } = req.body;
+    const user = await prisma.user.findUnique({ where: { email } });
+    
+    if (user && await bcrypt.compare(password, user.password)) {
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
+      res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+    } else {
+      res.status(401).json({ error: 'Credenciais inválidas' });
+    }
+  } catch (error) {
+    console.error('❌ Erro no login:', error);
+    res.status(500).json({ error: 'Erro ao fazer login' });
   }
 });
 
 // Projects API
 app.get('/api/projects', async (req, res) => {
-  const projects = await prisma.project.findMany({ orderBy: { order: 'asc' } });
-  res.json(projects);
+  try {
+    const projects = await prisma.project.findMany({ orderBy: { order: 'asc' } });
+    res.json(projects);
+  } catch (error) {
+    console.error('❌ Erro ao buscar projetos:', error);
+    res.status(500).json({ error: 'Erro ao buscar projetos' });
+  }
 });
 
 app.post('/api/projects', authenticate, async (req, res) => {
-  const project = await prisma.project.create({ data: req.body });
-  res.status(201).json(project);
+  try {
+    const project = await prisma.project.create({ data: req.body });
+    res.status(201).json(project);
+  } catch (error) {
+    console.error('❌ Erro ao criar projeto:', error);
+    res.status(500).json({ error: 'Erro ao criar projeto' });
+  }
 });
 
 app.put('/api/projects/:id', authenticate, async (req, res) => {
-  const project = await prisma.project.update({
-    where: { id: req.params.id },
-    data: req.body
-  });
-  res.json(project);
+  try {
+    const project = await prisma.project.update({
+      where: { id: req.params.id },
+      data: req.body
+    });
+    res.json(project);
+  } catch (error) {
+    console.error('❌ Erro ao atualizar projeto:', error);
+    res.status(500).json({ error: 'Erro ao atualizar projeto' });
+  }
 });
 
 app.delete('/api/projects/:id', authenticate, async (req, res) => {
-  await prisma.project.delete({ where: { id: req.params.id } });
-  res.status(204).send();
+  try {
+    await prisma.project.delete({ where: { id: req.params.id } });
+    res.status(204).send();
+  } catch (error) {
+    console.error('❌ Erro ao deletar projeto:', error);
+    res.status(500).json({ error: 'Erro ao deletar projeto' });
+  }
 });
 
 // Upload Route — Supabase Storage
@@ -160,11 +190,11 @@ app.post('/api/upload', authenticate, upload.single('image'), async (req, res) =
     }
 
     // Obter URL pública
-    const { data } = supabase.storage
+    const { data: urlData } = supabase.storage
       .from(bucketName)
       .getPublicUrl(filePath);
 
-    const publicUrl = data?.publicUrl;
+    const publicUrl = urlData?.publicUrl;
 
     if (!publicUrl) {
       console.error('❌ Erro ao gerar URL pública');
@@ -186,36 +216,56 @@ app.post('/api/upload', authenticate, upload.single('image'), async (req, res) =
 
 // Services API
 app.get('/api/services', async (req, res) => {
-  const services = await prisma.service.findMany({ orderBy: { createdAt: 'desc' } });
-  res.json(services);
+  try {
+    const services = await prisma.service.findMany({ orderBy: { createdAt: 'desc' } });
+    res.json(services);
+  } catch (error) {
+    console.error('❌ Erro ao buscar serviços:', error);
+    res.status(500).json({ error: 'Erro ao buscar serviços' });
+  }
 });
 
 app.post('/api/services', authenticate, async (req, res) => {
-  const { features, ...rest } = req.body;
-  const service = await prisma.service.create({ 
-    data: { 
-      ...rest,
-      features: Array.isArray(features) ? features : features.split(',').map(f => f.trim())
-    } 
-  });
-  res.status(201).json(service);
+  try {
+    const { features, ...rest } = req.body;
+    const service = await prisma.service.create({ 
+      data: { 
+        ...rest,
+        features: Array.isArray(features) ? features : features.split(',').map(f => f.trim())
+      } 
+    });
+    res.status(201).json(service);
+  } catch (error) {
+    console.error('❌ Erro ao criar serviço:', error);
+    res.status(500).json({ error: 'Erro ao criar serviço' });
+  }
 });
 
 app.put('/api/services/:id', authenticate, async (req, res) => {
-  const { features, ...rest } = req.body;
-  const service = await prisma.service.update({
-    where: { id: req.params.id },
-    data: {
-      ...rest,
-      features: Array.isArray(features) ? features : features.split(',').map(f => f.trim())
-    }
-  });
-  res.json(service);
+  try {
+    const { features, ...rest } = req.body;
+    const service = await prisma.service.update({
+      where: { id: req.params.id },
+      data: {
+        ...rest,
+        features: Array.isArray(features) ? features : features.split(',').map(f => f.trim())
+      }
+    });
+    res.json(service);
+  } catch (error) {
+    console.error('❌ Erro ao atualizar serviço:', error);
+    res.status(500).json({ error: 'Erro ao atualizar serviço' });
+  }
 });
 
 app.delete('/api/services/:id', authenticate, async (req, res) => {
-  await prisma.service.delete({ where: { id: req.params.id } });
-  res.status(204).send();
+  try {
+    await prisma.service.delete({ where: { id: req.params.id } });
+    res.status(204).send();
+  } catch (error) {
+    console.error('❌ Erro ao deletar serviço:', error);
+    res.status(500).json({ error: 'Erro ao deletar serviço' });
+  }
 });
 
 // Servir o frontend (dist) em produção
