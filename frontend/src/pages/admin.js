@@ -147,10 +147,11 @@ const editItem = async (id) => {
     imagePreview.innerHTML = '';
   }
 
-  // Fill specific fields
+  // Fill specific fields (imageUrl e id são tratados acima)
   const inputs = itemForm.querySelectorAll('input, select, textarea');
   inputs.forEach(input => {
-    if (item[input.name] !== undefined) {
+    if (!input.name || input.name === 'id' || input.name === 'imageUrl') return;
+    if (item[input.name] !== undefined && item[input.name] !== null) {
       if (input.name === 'techStack' || input.name === 'features') {
         input.value = Array.isArray(item[input.name]) ? item[input.name].join(', ') : item[input.name];
       } else {
@@ -181,6 +182,21 @@ const imageUpload = document.getElementById('imageUpload');
 const imageUrlInput = document.getElementById('imageUrlInput');
 const imagePreview = document.getElementById('imagePreview');
 
+const saveProjectImageUrl = async (projectId, imageUrl) => {
+  const res = await fetch(`${API_URL}/projects/${projectId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ imageUrl }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Falha ao guardar imagem no projecto');
+  }
+};
+
 imageUpload.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -195,12 +211,24 @@ imageUpload.addEventListener('change', async (e) => {
       body: formData
     });
     const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Erro no upload');
+      return;
+    }
     if (data.imageUrl) {
       imageUrlInput.value = data.imageUrl;
       imagePreview.innerHTML = `<img src="${getImageUrl(data.imageUrl)}" style="max-width:100px; border-radius:8px; margin-top:10px;">`;
+
+      const projectId = document.getElementById('itemIdInput').value;
+      if (currentTab === 'projects' && projectId) {
+        await saveProjectImageUrl(projectId, data.imageUrl);
+        loadData();
+      }
     }
   } catch (err) {
-    alert('Erro no upload');
+    alert(err.message || 'Erro no upload');
+  } finally {
+    e.target.value = '';
   }
 });
 
@@ -224,13 +252,12 @@ closeModal.addEventListener('click', () => itemModal.classList.add('hidden'));
 
 itemForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const formData = new FormData(itemForm);
-  const rawData = Object.fromEntries(formData.entries());
-  const id = rawData.id;
-  
+  const id = document.getElementById('itemIdInput').value;
+  const imageUrl = imageUrlInput.value.trim();
+
   const projectContainer = document.getElementById('projectFields');
   const serviceContainer = document.getElementById('serviceFields');
-  
+
   let body = {};
   if (currentTab === 'projects') {
     body = {
@@ -242,7 +269,7 @@ itemForm.addEventListener('submit', async (e) => {
       solution: projectContainer.querySelector('[name="solution"]').value,
       role: projectContainer.querySelector('[name="role"]').value,
       techStack: projectContainer.querySelector('[name="techStack"]').value.split(',').map(s => s.trim()),
-      imageUrl: rawData.imageUrl,
+      imageUrl,
       link: projectContainer.querySelector('[name="link"]').value
     };
   } else {
@@ -252,7 +279,6 @@ itemForm.addEventListener('submit', async (e) => {
       priceKz: serviceContainer.querySelector('[name="priceKz"]').value,
       priceEur: serviceContainer.querySelector('[name="priceEur"]').value,
       features: serviceContainer.querySelector('[name="features"]').value,
-      imageUrl: rawData.imageUrl
     };
   }
 
