@@ -22,17 +22,23 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
-// Inicializar Supabase
+// Inicializar Supabase (service role no servidor — bypassa RLS do Storage)
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_KEY ||
+  process.env.SUPABASE_ANON_KEY;
 const bucketName = process.env.SUPABASE_BUCKET || 'portfolio-uploads';
 
 let supabase;
 if (supabaseUrl && supabaseKey) {
   supabase = createClient(supabaseUrl, supabaseKey);
-  console.log('✅ Supabase conectado');
+  const keyType = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? 'service role'
+    : 'anon (uploads podem falhar por RLS)';
+  console.log(`✅ Supabase conectado (${keyType})`);
 } else {
-  console.warn('⚠️  Variáveis Supabase não configuradas');
+  console.warn('⚠️  Variáveis Supabase não configuradas (SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY)');
 }
 
 // Configurar multer para armazenamento em memória
@@ -186,7 +192,14 @@ app.post('/api/upload', authenticate, upload.single('image'), async (req, res) =
 
     if (error) {
       console.error('❌ Erro ao fazer upload:', error);
-      return res.status(500).json({ error: 'Erro ao fazer upload da imagem' });
+      const rlsBlocked =
+        error.statusCode === '403' ||
+        error.message?.includes('row-level security');
+      return res.status(500).json({
+        error: rlsBlocked
+          ? 'Permissão negada no Supabase Storage. Defina SUPABASE_SERVICE_ROLE_KEY no backend.'
+          : 'Erro ao fazer upload da imagem',
+      });
     }
 
     // Obter URL pública

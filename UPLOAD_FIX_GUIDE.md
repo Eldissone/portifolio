@@ -20,7 +20,7 @@ In your Supabase dashboard:
 1. Go to **Settings** → **API**
 2. Copy:
    - `Project URL` (SUPABASE_URL)
-   - `anon` public key (SUPABASE_ANON_KEY)
+   - `service_role` secret key (SUPABASE_SERVICE_ROLE_KEY) — **nunca expor no frontend**
 
 ### 3. Configure Vercel Environment Variables
 In your Vercel project dashboard:
@@ -29,15 +29,17 @@ In your Vercel project dashboard:
 
 ```
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 SUPABASE_BUCKET=portfolio-uploads
 ```
+
+> **Porquê service role?** A chave `anon` está sujeita às políticas RLS do Storage. Uploads feitos pelo backend falham com `new row violates row-level security policy` sem a service role.
 
 ### 4. Local Testing
 Create or update your `.env` file in `backend/`:
 ```
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 SUPABASE_BUCKET=portfolio-uploads
 ```
 
