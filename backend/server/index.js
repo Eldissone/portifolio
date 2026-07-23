@@ -230,7 +230,9 @@ app.post('/api/upload', authenticate, upload.single('image'), async (req, res) =
 // Services API
 app.get('/api/services', async (req, res) => {
   try {
-    const services = await prisma.service.findMany({ orderBy: { createdAt: 'desc' } });
+    const services = await prisma.service.findMany({
+      orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    });
     res.json(services);
   } catch (error) {
     console.error('❌ Erro ao buscar serviços:', error);

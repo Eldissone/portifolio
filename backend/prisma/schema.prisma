@@ -44,6 +44,7 @@ model Service {
   features    String[]
   delivery    String?
   isFeatured  Boolean  @default(false)
+  order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

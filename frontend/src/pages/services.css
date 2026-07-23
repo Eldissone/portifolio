@@ -101,7 +101,23 @@
 .spc-features li { display:flex; align-items:flex-start; gap:0.6rem; font-size:0.86rem; color:var(--muted); }
 .spc-features li i { color:var(--primary); font-size:0.75rem; margin-top:0.25rem; flex-shrink:0; }
 
-.spc-btn { width:100%; justify-content:center; margin-top:auto; }
+.spc-btn { width:100%; justify-content:center; }
+
+.spc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: auto;
+}
+
+.spc-btn-wa { width: 100%; justify-content: center; font-size: 0.9rem; }
+
+.services-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--muted);
+  padding: 3rem 0;
+}
 
 /* ===== FAQ ===== */
 .faq-section { padding:5rem 0; background:var(--card-bg); }

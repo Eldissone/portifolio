@@ -242,6 +242,13 @@
   font-size: 1.05rem;
 }
 
+.services-cta-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 /* ===== TECH STACK ===== */
 .tech-stack {
   margin-top: 3rem;
@@ -962,8 +969,11 @@ section {
   box-shadow: 0 4px 20px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:focus-visible,
+.btn-primary:active {
   background: var(--primary-dark);
+  color: #fff;
   transform: translateY(-2px);
   box-shadow: 0 8px 30px color-mix(in srgb, var(--primary) 40%, transparent);
 }

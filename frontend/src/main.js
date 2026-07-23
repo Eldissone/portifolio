@@ -42,7 +42,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Adicionar validação em tempo real
     addRealTimeValidation(contactForm);
+
+    prefillServiceFromUrl(contactForm);
 });
+
+function prefillServiceFromUrl(contactForm) {
+    const params = new URLSearchParams(window.location.search);
+    const servico = params.get('servico');
+    if (!servico) return;
+
+    const messageField = contactForm.querySelector('textarea[name="message"]');
+    if (messageField && !messageField.value.trim()) {
+        messageField.value = `Olá! Gostaria de solicitar o serviço "${servico}".\n\n`;
+        messageField.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    if (window.location.hash === '#contact') {
+        requestAnimationFrame(() => {
+            document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+}
 
 // ============================================
 // FUNÇÃO PRINCIPAL DE ENVIO
