@@ -771,5 +771,3 @@ window.contactFormUtils = {
     triggerConfetti,
     CONFIG
 };
-
-console.log('✅ Formulário de contato inicializado com sucesso!');
