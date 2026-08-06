@@ -303,12 +303,38 @@
   margin-top: 2rem;
 }
 
-.reader-shell {
+.book-access-layout {
+  display: block;
   margin-top: 2rem;
+}
+
+.book-access-layout .download-box {
+  margin-top: 0;
+}
+
+.reader-drawer.hidden {
+  display: none;
+}
+
+.reader-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(48vw, 720px);
+  height: 100vh;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(2px);
+}
+
+.reader-shell {
+  height: 100%;
   background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 1.25rem;
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .reader-toolbar {
@@ -323,7 +349,7 @@
 
 .reader-frame {
   width: 100%;
-  min-height: 80vh;
+  height: 100%;
   border: 0;
   background: #111;
 }
@@ -381,4 +407,12 @@
 .btn-sm {
   padding: 0.55rem 1.2rem;
   font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .reader-drawer {
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+  }
 }

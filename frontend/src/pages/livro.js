@@ -19,6 +19,55 @@ const escapeHtml = (s) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
+async function renderInlineReader(token, mountSelector = '#inlineReader') {
+  const mount = document.querySelector(mountSelector);
+  if (!mount) return;
+
+  mount.classList.remove('hidden');
+  mount.setAttribute('aria-hidden', 'false');
+  mount.innerHTML = '<div class="reader-shell"><div class="reader-toolbar"><p class="content-meta">A preparar a leitura...</p><button type="button" class="btn btn-outline btn-sm" id="hideInlineReaderBtn">Ocultar</button></div></div>';
+
+  try {
+    const res = await fetch(`${API_URL}/downloads/${encodeURIComponent(token)}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      mount.innerHTML = `<p class="empty-state">${escapeHtml(data.error || 'Não foi possível abrir o PDF.')}</p>`;
+      return;
+    }
+
+    mount.innerHTML = `
+      <div class="reader-shell">
+        <div class="reader-toolbar">
+          <div>
+            <h3 style="margin-bottom:0.25rem;">Ler no site</h3>
+            <p class="content-meta">Usos restantes: ${data.remainingUses ?? '—'}</p>
+          </div>
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+            <a class="btn btn-outline btn-sm" href="${escapeHtml(data.url)}" target="_blank" rel="noopener noreferrer">
+              <i class="fas fa-up-right-from-square"></i> Abrir externo
+            </a>
+            <button type="button" class="btn btn-outline btn-sm" id="hideInlineReaderBtn">Ocultar</button>
+          </div>
+        </div>
+        <iframe
+          class="reader-frame"
+          src="${escapeHtml(data.url)}#toolbar=1&navpanes=0&scrollbar=1"
+          title="${escapeHtml(data.book?.title || 'PDF')}"
+        ></iframe>
+      </div>
+    `;
+  } catch {
+    mount.innerHTML = '<p class="empty-state">Não foi possível abrir o leitor.</p>';
+  }
+
+  document.getElementById('hideInlineReaderBtn')?.addEventListener('click', () => {
+    mount.classList.add('hidden');
+    mount.setAttribute('aria-hidden', 'true');
+    mount.innerHTML = '';
+  });
+}
+
 async function loadBook() {
   if (!slug) {
     root.innerHTML = '<p class="empty-state">Livro não especificado.</p>';
@@ -56,13 +105,16 @@ async function loadBook() {
       <div class="share-bar" id="shareBar"></div>
       ${
         book.isFree
-          ? `<div class="download-box">
-              <h3>Download gratuito</h3>
-              <p>O link é temporário e tem usos limitados.</p>
-              <button type="button" class="btn btn-primary" id="freeDownloadBtn">
-                <i class="fas fa-download"></i> Descarregar PDF
-              </button>
-              <div id="freeResult"></div>
+          ? `<div class="book-access-layout">
+              <div class="download-box">
+                <h3>Download gratuito</h3>
+                <p>O link é temporário e tem usos limitados. Também podes ler aqui na própria página.</p>
+                <button type="button" class="btn btn-primary" id="freeDownloadBtn">
+                  <i class="fas fa-download"></i> Descarregar PDF
+                </button>
+                <div id="freeResult"></div>
+              </div>
+              <div id="inlineReader" class="reader-drawer hidden" aria-hidden="true"></div>
             </div>`
           : `<div class="order-box">
               <h3>Pedir acesso (pagamento manual)</h3>
@@ -115,10 +167,13 @@ async function loadBook() {
               <p>Link gerado. Podes descarregar ou ler no site.</p>
               <p style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
                 <a class="btn btn-primary btn-sm" href="download.html?token=${encodeURIComponent(data.token)}">Descarregar</a>
-                <a class="btn btn-outline btn-sm" href="reader.html?token=${encodeURIComponent(data.token)}">Ler no site</a>
+                <button type="button" class="btn btn-outline btn-sm" id="inlineReadBtn">Ler no site</button>
               </p>
             </div>`;
-          window.location.href = `download.html?token=${encodeURIComponent(data.token)}`;
+          document.getElementById('inlineReadBtn')?.addEventListener('click', () => {
+            renderInlineReader(data.token);
+          });
+          btn.disabled = false;
         } catch {
           alert('Erro ao gerar download');
           btn.disabled = false;

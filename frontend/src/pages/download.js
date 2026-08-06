@@ -39,8 +39,6 @@ async function run() {
       <p class="form-hint" style="margin-top:1rem;">Se o download não iniciar, usa o botão acima.</p>
     `;
 
-    // Attempt auto-open
-    window.location.href = data.url;
   } catch {
     root.innerHTML = '<h3>Erro</h3><p>Não foi possível processar o download.</p>';
   }
