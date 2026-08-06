@@ -23,16 +23,43 @@ async function renderInlineReader(token, mountSelector = '#inlineReader') {
   const mount = document.querySelector(mountSelector);
   if (!mount) return;
 
+  const closeReader = () => {
+    mount.classList.add('hidden');
+    mount.setAttribute('aria-hidden', 'true');
+    mount.innerHTML = '';
+    document.body.style.overflow = '';
+  };
+
   mount.classList.remove('hidden');
   mount.setAttribute('aria-hidden', 'false');
-  mount.innerHTML = '<div class="reader-shell"><div class="reader-toolbar"><p class="content-meta">A preparar a leitura...</p><button type="button" class="btn btn-outline btn-sm" id="hideInlineReaderBtn">Ocultar</button></div></div>';
+  document.body.style.overflow = 'hidden';
+  mount.innerHTML = `
+    <div class="reader-shell">
+      <div class="reader-toolbar">
+        <p class="content-meta">A preparar a leitura...</p>
+        <div class="reader-toolbar-actions">
+          <button type="button" class="btn btn-outline btn-sm" id="hideInlineReaderBtn">Ocultar</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('hideInlineReaderBtn')?.addEventListener('click', closeReader);
 
   try {
     const res = await fetch(`${API_URL}/downloads/${encodeURIComponent(token)}`);
     const data = await res.json();
 
     if (!res.ok) {
-      mount.innerHTML = `<p class="empty-state">${escapeHtml(data.error || 'Não foi possível abrir o PDF.')}</p>`;
+      mount.innerHTML = `
+        <div class="reader-shell">
+          <div class="reader-toolbar">
+            <p class="empty-state" style="padding:0;margin:0;">${escapeHtml(data.error || 'Não foi possível abrir o PDF.')}</p>
+            <div class="reader-toolbar-actions">
+              <button type="button" class="btn btn-outline btn-sm" id="hideInlineReaderBtn">Ocultar</button>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('hideInlineReaderBtn')?.addEventListener('click', closeReader);
       return;
     }
 
@@ -43,11 +70,13 @@ async function renderInlineReader(token, mountSelector = '#inlineReader') {
             <h3 style="margin-bottom:0.25rem;">Ler no site</h3>
             <p class="content-meta">Usos restantes: ${data.remainingUses ?? '—'}</p>
           </div>
-          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <div class="reader-toolbar-actions">
             <a class="btn btn-outline btn-sm" href="${escapeHtml(data.url)}" target="_blank" rel="noopener noreferrer">
-              <i class="fas fa-up-right-from-square"></i> Abrir externo
+              <i class="fas fa-up-right-from-square"></i> Externo
             </a>
-            <button type="button" class="btn btn-outline btn-sm" id="hideInlineReaderBtn">Ocultar</button>
+            <button type="button" class="btn btn-primary btn-sm" id="hideInlineReaderBtn">
+              <i class="fas fa-times"></i> Ocultar
+            </button>
           </div>
         </div>
         <iframe
@@ -58,14 +87,18 @@ async function renderInlineReader(token, mountSelector = '#inlineReader') {
       </div>
     `;
   } catch {
-    mount.innerHTML = '<p class="empty-state">Não foi possível abrir o leitor.</p>';
+    mount.innerHTML = `
+      <div class="reader-shell">
+        <div class="reader-toolbar">
+          <p class="empty-state" style="padding:0;margin:0;">Não foi possível abrir o leitor.</p>
+          <div class="reader-toolbar-actions">
+            <button type="button" class="btn btn-outline btn-sm" id="hideInlineReaderBtn">Ocultar</button>
+          </div>
+        </div>
+      </div>`;
   }
 
-  document.getElementById('hideInlineReaderBtn')?.addEventListener('click', () => {
-    mount.classList.add('hidden');
-    mount.setAttribute('aria-hidden', 'true');
-    mount.innerHTML = '';
-  });
+  document.getElementById('hideInlineReaderBtn')?.addEventListener('click', closeReader);
 }
 
 async function loadBook() {
@@ -165,7 +198,7 @@ async function loadBook() {
           document.getElementById('freeResult').innerHTML = `
             <div class="order-result">
               <p>Link gerado. Podes descarregar ou ler no site.</p>
-              <p style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
+              <p class="book-action-row">
                 <a class="btn btn-primary btn-sm" href="download.html?token=${encodeURIComponent(data.token)}">Descarregar</a>
                 <button type="button" class="btn btn-outline btn-sm" id="inlineReadBtn">Ler no site</button>
               </p>
