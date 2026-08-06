@@ -100,8 +100,32 @@ loginForm.addEventListener('submit', async (e) => {
 logoutBtn.addEventListener('click', () => {
   token = null;
   localStorage.removeItem('admin_token');
+  closeSidebar();
   checkAuth();
 });
+
+const adminMenuToggle = document.getElementById('adminMenuToggle');
+const sidebarClose = document.getElementById('sidebarClose');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+const openSidebar = () => {
+  adminDashboard?.classList.add('sidebar-open');
+  adminMenuToggle?.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+};
+
+const closeSidebar = () => {
+  adminDashboard?.classList.remove('sidebar-open');
+  adminMenuToggle?.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+};
+
+adminMenuToggle?.addEventListener('click', () => {
+  if (adminDashboard?.classList.contains('sidebar-open')) closeSidebar();
+  else openSidebar();
+});
+sidebarClose?.addEventListener('click', closeSidebar);
+sidebarOverlay?.addEventListener('click', closeSidebar);
 
 const setActiveTab = (tab) => {
   currentTab = tab;
@@ -119,6 +143,7 @@ const setActiveTab = (tab) => {
   document.getElementById('mediaSection')?.classList.toggle('hidden', tab === 'orders');
   document.getElementById('formActions')?.classList.toggle('hidden', tab === 'orders');
 
+  closeSidebar();
   loadData();
 };
 

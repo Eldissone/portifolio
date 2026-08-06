@@ -35,9 +35,13 @@
 
   <!-- Dashboard -->
   <div id="adminDashboard" class="admin-container hidden">
-    <aside class="admin-sidebar">
+    <div id="sidebarOverlay" class="sidebar-overlay" aria-hidden="true"></div>
+    <aside class="admin-sidebar" id="adminSidebar">
       <div class="sidebar-header">
         <h1>eldissone.<span>admin</span></h1>
+        <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Fechar menu">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
       <nav class="sidebar-nav">
         <button class="nav-btn active" data-tab="projects"><i class="fas fa-folder"></i> Projectos</button>
@@ -51,9 +55,14 @@
 
     <main class="admin-main">
       <header class="admin-header">
-        <h2 id="tabTitle">Gerir Projectos</h2>
-        <div class="admin-header-actions desktop-only">
-          <button class="btn btn-primary btn-sm" id="addNewBtn"><i class="fas fa-plus"></i> Novo</button>
+        <div class="admin-header-left">
+          <button type="button" class="admin-menu-toggle" id="adminMenuToggle" aria-label="Abrir menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+          </button>
+          <h2 id="tabTitle">Gerir Projectos</h2>
+        </div>
+        <div class="admin-header-actions">
+          <button class="btn btn-primary btn-sm" id="addNewBtn"><i class="fas fa-plus"></i> <span class="btn-label">Novo</span></button>
           <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
             <i class="fas fa-moon" id="themeIcon"></i>
           </button>
