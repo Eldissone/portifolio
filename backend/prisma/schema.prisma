@@ -49,3 +49,83 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model Post {
+  id              String    @id @default(uuid())
+  slug            String    @unique
+  title           String
+  excerpt         String?
+  content         String
+  coverUrl        String?
+  status          String    @default("draft") // draft | published | archived
+  publishedAt     DateTime?
+  tags            String[]
+  metaTitle       String?
+  metaDescription String?
+  videoEmbeds     Json?     // [{url, provider}]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([createdAt])
+}
+
+model Book {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  title       String
+  description String
+  coverUrl    String?
+  filePath    String?  // private storage path — never expose publicly
+  priceKz     String?
+  priceEur    String?
+  isFree      Boolean  @default(false)
+  status      String   @default("draft") // draft | published | archived
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders         Order[]
+  downloadTokens DownloadToken[]
+
+  @@index([status, createdAt])
+  @@index([isFree])
+}
+
+model Order {
+  id            String    @id @default(uuid())
+  bookId        String
+  book          Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  customerName  String
+  customerEmail String
+  method        String    // multicaixa | transfer | whatsapp
+  status        String    @default("pending") // pending | paid | rejected | expired
+  notes         String?
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  downloadTokens DownloadToken[]
+
+  @@index([status, createdAt])
+  @@index([customerEmail])
+  @@index([bookId])
+}
+
+model DownloadToken {
+  id        String   @id @default(uuid())
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  tokenHash String   @unique
+  expiresAt DateTime
+  maxUses   Int      @default(3)
+  usedCount Int      @default(0)
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@index([bookId])
+  @@index([orderId])
+}

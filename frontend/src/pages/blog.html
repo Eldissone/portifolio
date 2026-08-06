@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Artigos, tutoriais e reflexões de Eldissone Vilonga sobre desenvolvimento e tecnologia.">
+  <meta property="og:title" content="Blog | Eldissone Vilonga">
+  <meta property="og:description" content="Publicações com texto, imagem e vídeo.">
+  <meta property="og:url" content="https://www.eldissone.com/src/pages/blog.html">
+  <meta property="og:type" content="website">
+  <title>Blog | Eldissone Vilonga</title>
+  <link rel="icon" type="image/svg+xml" href="../../public/finev.ico">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="content.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="loading-screen">
+    <div class="loader"><div class="loader-spinner"></div><p>A carregar...</p></div>
+  </div>
+
+  <nav class="main-nav">
+    <div class="nav-container">
+      <div class="logo">
+        <a href="../../index.html"><h1><span class="logo-highlight">ev</span>.</h1></a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="../../index.html#home" class="nav-link">Início</a></li>
+        <li><a href="../../index.html#about" class="nav-link">Sobre</a></li>
+        <li><a href="servicos.html" class="nav-link">Serviços</a></li>
+        <li><a href="../../index.html#projects" class="nav-link">Projectos</a></li>
+        <li><a href="blog.html" class="nav-link active">Blog</a></li>
+        <li><a href="biblioteca.html" class="nav-link">Biblioteca</a></li>
+        <li><a href="../../index.html#contact" class="nav-link">Contacto</a></li>
+        <li class="mobile-only nav-mobile-actions">
+          <a href="../../index.html#contact" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Fale comigo</a>
+          <button class="theme-toggle theme-toggle-mobile" aria-label="Alternar tema"><i class="fas fa-moon"></i></button>
+        </li>
+      </ul>
+      <div class="nav-right desktop-only">
+        <a href="../../index.html#contact" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Fale comigo</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema"><i class="fas fa-moon"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <main style="padding-top:80px;">
+    <section class="page-hero">
+      <div class="container">
+        <div class="page-hero-tag"><i class="fas fa-newspaper"></i> Blog</div>
+        <h1 class="page-hero-title">HUB de conhecimento sobre tecnologia, empreendedorismo, IA, finanças,<br><em class="text-copper">carreira  &amp;  inovação</em></h1>
+        <p class="page-hero-sub">Uma estrutura de conhecimento que conecta tecnologia, empreendedorismo, inteligência artificial, finanças, carreira e inovação a oportunidades reais.</p>
+        <div class="content-toolbar">
+          <input type="search" id="searchInput" placeholder="Pesquisar artigos...">
+          <input type="text" id="tagInput" placeholder="Filtrar por tag">
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <div class="container">
+        <div class="content-grid" id="postsGrid">
+          <p class="content-loading">A carregar publicações...</p>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-logo">
+            <h2>Eldissone <span class="highlight">Vilonga</span></h2>
+            <p>Founder at finev &amp; Full Stack Developer</p>
+          </div>
+          <div class="footer-social">
+            <p>Seguir nas redes:</p>
+            <ul>
+              <li><a href="https://www.linkedin.com/in/eldissone-vilonga-210207239" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></li>
+              <li><a href="https://github.com/Eldissone" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a></li>
+              <li><a href="https://www.instagram.com/eldissone/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
+              <li><a href="https://wa.me/244933170799" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 Eldissone Vilonga — Todos os direitos reservados.</p>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script type="module" src="./blog.js"></script>
+</body>
+</html>

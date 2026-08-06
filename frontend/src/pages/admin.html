@@ -42,6 +42,9 @@
       <nav class="sidebar-nav">
         <button class="nav-btn active" data-tab="projects"><i class="fas fa-folder"></i> Projectos</button>
         <button class="nav-btn" data-tab="services"><i class="fas fa-cog"></i> Serviços</button>
+        <button class="nav-btn" data-tab="posts"><i class="fas fa-newspaper"></i> Blog</button>
+        <button class="nav-btn" data-tab="books"><i class="fas fa-book"></i> Livros</button>
+        <button class="nav-btn" data-tab="orders"><i class="fas fa-receipt"></i> Pedidos</button>
         <button id="logoutBtn" class="nav-btn logout"><i class="fas fa-sign-out-alt"></i> Sair</button>
       </nav>
     </aside>
@@ -58,7 +61,6 @@
       </header>
 
       <div class="admin-content">
-        <!-- Projects List -->
         <div id="projectsTab" class="tab-content">
           <div class="admin-table-wrapper">
             <table class="admin-table">
@@ -71,14 +73,11 @@
                   <th>Acções</th>
                 </tr>
               </thead>
-              <tbody id="projectsTableBody">
-                <!-- Loaded via JS -->
-              </tbody>
+              <tbody id="projectsTableBody"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Services List -->
         <div id="servicesTab" class="tab-content hidden">
           <div class="admin-table-wrapper">
             <table class="admin-table">
@@ -91,9 +90,60 @@
                   <th>Acções</th>
                 </tr>
               </thead>
-              <tbody id="servicesTableBody">
-                <!-- Loaded via JS -->
-              </tbody>
+              <tbody id="servicesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="postsTab" class="tab-content hidden">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Capa</th>
+                  <th>Título</th>
+                  <th>Estado</th>
+                  <th>Tags</th>
+                  <th>Acções</th>
+                </tr>
+              </thead>
+              <tbody id="postsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="booksTab" class="tab-content hidden">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Capa</th>
+                  <th>Título</th>
+                  <th>Preço</th>
+                  <th>PDF</th>
+                  <th>Estado</th>
+                  <th>Acções</th>
+                </tr>
+              </thead>
+              <tbody id="booksTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="ordersTab" class="tab-content hidden">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Ref</th>
+                  <th>Cliente</th>
+                  <th>Livro</th>
+                  <th>Método</th>
+                  <th>Estado</th>
+                  <th>Acções</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody"></tbody>
             </table>
           </div>
         </div>
@@ -108,9 +158,9 @@
         <h3 id="modalTitle">Adicionar Projecto</h3>
         <button class="close-modal">&times;</button>
       </header>
-      <form id="itemForm" class="admin-form">
+      <form id="itemForm" class="admin-form" novalidate>
         <input type="hidden" name="id" id="itemIdInput">
-        <div class="form-section">
+        <div class="form-section" id="mediaSection">
           <label class="form-label">Media & Assets</label>
           <div class="upload-container">
             <input type="file" id="imageUpload" accept="image/*" class="form-input-file">
@@ -135,17 +185,14 @@
               </select>
             </div>
           </div>
-
           <div class="form-group">
             <label>Resumo Curto (Aparece no Grid)</label>
             <input type="text" name="description" required>
           </div>
-
           <div class="form-group">
             <label>Visão Geral (Detalhes)</label>
             <textarea name="overview" rows="3"></textarea>
           </div>
-
           <div class="form-grid">
             <div class="form-group">
               <label>O Desafio</label>
@@ -156,7 +203,6 @@
               <textarea name="solution" rows="3"></textarea>
             </div>
           </div>
-
           <div class="form-grid">
             <div class="form-group">
               <label>Função / Cargo</label>
@@ -167,7 +213,6 @@
               <input type="url" name="link" placeholder="https://...">
             </div>
           </div>
-
           <div class="form-group">
             <label>Tecnologias (separadas por vírgula)</label>
             <input type="text" name="techStack" placeholder="React, Node.js, Prisma">
@@ -197,11 +242,128 @@
           </div>
         </div>
 
-        <div class="form-actions">
+        <div id="postFields" class="hidden">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" name="title" required>
+            </div>
+            <div class="form-group">
+              <label>Slug (URL)</label>
+              <input type="text" name="slug" placeholder="meu-artigo">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Excerpt</label>
+            <input type="text" name="excerpt" placeholder="Resumo curto">
+          </div>
+          <div class="form-group">
+            <label>Conteúdo (HTML ou Markdown simples)</label>
+            <textarea name="content" rows="8"></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Estado</label>
+              <select name="status">
+                <option value="draft">Rascunho</option>
+                <option value="published">Publicado</option>
+                <option value="archived">Arquivado</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tags (vírgula)</label>
+              <input type="text" name="tags" placeholder="tech, carreira">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Vídeos embed (URLs YouTube/Vimeo, uma por linha)</label>
+            <textarea name="videoEmbeds" rows="3" placeholder="https://www.youtube.com/watch?v=..."></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Meta Title SEO</label>
+              <input type="text" name="metaTitle">
+            </div>
+            <div class="form-group">
+              <label>Meta Description</label>
+              <input type="text" name="metaDescription">
+            </div>
+          </div>
+        </div>
+
+        <div id="bookFields" class="hidden">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" name="title" required>
+            </div>
+            <div class="form-group">
+              <label>Slug (URL)</label>
+              <input type="text" name="slug" placeholder="meu-livro">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea name="description" rows="4"></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Preço Kz</label>
+              <input type="text" name="priceKz" placeholder="5 000 Kz">
+            </div>
+            <div class="form-group">
+              <label>Preço €</label>
+              <input type="text" name="priceEur" placeholder="5 €">
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Gratuito?</label>
+              <select name="isFree">
+                <option value="false">Não (pago)</option>
+                <option value="true">Sim (grátis)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Estado</label>
+              <select name="status">
+                <option value="draft">Rascunho</option>
+                <option value="published">Publicado</option>
+                <option value="archived">Arquivado</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tags (vírgula)</label>
+            <input type="text" name="tags" placeholder="programação, negócios">
+          </div>
+          <div class="form-group">
+            <label>Ficheiro PDF</label>
+            <input type="file" id="pdfUpload" accept="application/pdf" class="form-input-file">
+            <p id="pdfStatus" class="form-hint">Sem ficheiro</p>
+          </div>
+        </div>
+
+        <div class="form-actions" id="formActions">
           <button type="submit" class="btn btn-primary btn-block">Guardar Alterações</button>
         </div>
       </form>
+    </div>
+  </div>
 
+  <!-- Download link modal for orders -->
+  <div id="downloadModal" class="modal hidden">
+    <div class="modal-content modal-sm">
+      <header class="modal-header">
+        <h3>Link de download</h3>
+        <button class="close-download-modal">&times;</button>
+      </header>
+      <div class="download-link-box">
+        <p>Copia e envia ao cliente:</p>
+        <input type="text" id="downloadLinkInput" readonly>
+        <button type="button" class="btn btn-primary btn-block" id="copyDownloadLink">Copiar link</button>
+        <p id="downloadMeta" class="form-hint"></p>
+      </div>
     </div>
   </div>
 

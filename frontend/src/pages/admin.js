@@ -3,30 +3,36 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const IMAGE_BASE = import.meta.env.VITE_IMAGE_BASE_URL || 'http://localhost:3000';
 
-// Se a URL já é absoluta (Supabase), usa directamente; caso contrário prefija com IMAGE_BASE
-const getImageUrl = (url) => url?.startsWith('http') ? url : `${IMAGE_BASE}${url}`;
+const getImageUrl = (url) => (url?.startsWith('http') ? url : `${IMAGE_BASE}${url}`);
 
-// State
+const TAB_TITLES = {
+  projects: 'Gerir Projectos',
+  services: 'Gerir Serviços',
+  posts: 'Gerir Blog',
+  books: 'Gerir Livros',
+  orders: 'Pedidos',
+};
+
 let token = localStorage.getItem('admin_token');
 let currentTab = 'projects';
+let editingBookHasFile = false;
 
-// Elements
 const loginOverlay = document.getElementById('loginOverlay');
 const adminDashboard = document.getElementById('adminDashboard');
 const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
 const tabButtons = document.querySelectorAll('.nav-btn[data-tab]');
-const projectsTab = document.getElementById('projectsTab');
-const servicesTab = document.getElementById('servicesTab');
 const tabTitle = document.getElementById('tabTitle');
-const projectsTableBody = document.getElementById('projectsTableBody');
 const addNewBtn = document.getElementById('addNewBtn');
 const itemModal = document.getElementById('itemModal');
 const itemForm = document.getElementById('itemForm');
 const closeModal = document.querySelector('.close-modal');
+const imageUpload = document.getElementById('imageUpload');
+const imageUrlInput = document.getElementById('imageUrlInput');
+const imagePreview = document.getElementById('imagePreview');
+const downloadModal = document.getElementById('downloadModal');
 
-// ===== AUTH =====
 const checkAuth = () => {
   if (token) {
     loginOverlay.classList.add('hidden');
@@ -47,9 +53,8 @@ loginForm.addEventListener('submit', async (e) => {
     const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
-    
     const data = await res.json();
     if (data.token) {
       token = data.token;
@@ -58,7 +63,7 @@ loginForm.addEventListener('submit', async (e) => {
     } else {
       loginError.textContent = data.error || 'Erro ao entrar';
     }
-  } catch (err) {
+  } catch {
     loginError.textContent = 'Erro ao conectar ao servidor';
   }
 });
@@ -69,107 +74,315 @@ logoutBtn.addEventListener('click', () => {
   checkAuth();
 });
 
-// ===== TAB SWITCHING =====
-tabButtons.forEach(btn => {
+const setActiveTab = (tab) => {
+  currentTab = tab;
+  tabTitle.textContent = TAB_TITLES[tab] || tab;
+  addNewBtn.classList.toggle('hidden', tab === 'orders');
+
+  ['projects', 'services', 'posts', 'books', 'orders'].forEach((t) => {
+    document.getElementById(`${t}Tab`)?.classList.toggle('hidden', t !== tab);
+  });
+
+  document.getElementById('projectFields')?.classList.toggle('hidden', tab !== 'projects');
+  document.getElementById('serviceFields')?.classList.toggle('hidden', tab !== 'services');
+  document.getElementById('postFields')?.classList.toggle('hidden', tab !== 'posts');
+  document.getElementById('bookFields')?.classList.toggle('hidden', tab !== 'books');
+  document.getElementById('mediaSection')?.classList.toggle('hidden', tab === 'orders');
+  document.getElementById('formActions')?.classList.toggle('hidden', tab === 'orders');
+
+  loadData();
+};
+
+tabButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
-    tabButtons.forEach(b => b.classList.remove('active'));
+    tabButtons.forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
-    
-    currentTab = btn.dataset.tab;
-    tabTitle.textContent = currentTab === 'projects' ? 'Gerir Projectos' : 'Gerir Serviços';
-    
-    projectsTab.classList.toggle('hidden', currentTab !== 'projects');
-    servicesTab.classList.toggle('hidden', currentTab !== 'services');
-    
-    loadData();
+    setActiveTab(btn.dataset.tab);
   });
 });
 
-// ===== DATA LOADING =====
+const authHeaders = () => ({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${token}`,
+});
+
 const loadData = async () => {
-  if (currentTab === 'projects') {
-    const res = await fetch(`${API_URL}/projects`);
-    const projects = await res.json();
-    renderProjects(projects);
-  } else {
-    const res = await fetch(`${API_URL}/services`);
-    const services = await res.json();
-    renderServices(services);
+  try {
+    if (currentTab === 'projects') {
+      const res = await fetch(`${API_URL}/projects`);
+      renderProjects(await res.json());
+    } else if (currentTab === 'services') {
+      const res = await fetch(`${API_URL}/services`);
+      renderServices(await res.json());
+    } else if (currentTab === 'posts') {
+      const res = await fetch(`${API_URL}/posts/admin/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      renderPosts(await res.json());
+    } else if (currentTab === 'books') {
+      const res = await fetch(`${API_URL}/books/admin/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      renderBooks(await res.json());
+    } else if (currentTab === 'orders') {
+      const res = await fetch(`${API_URL}/orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      renderOrders(await res.json());
+    }
+  } catch (err) {
+    console.error(err);
   }
 };
 
+const escapeHtml = (str) =>
+  String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
 const renderProjects = (projects) => {
-  projectsTableBody.innerHTML = projects.map(p => `
+  document.getElementById('projectsTableBody').innerHTML = projects
+    .map(
+      (p) => `
     <tr>
       <td>${p.imageUrl ? `<img src="${getImageUrl(p.imageUrl)}" class="td-thumb">` : '-'}</td>
-      <td><strong>${p.title}</strong></td>
-      <td><span class="tag-category">${p.category}</span></td>
-      <td>${p.techStack.join(', ')}</td>
+      <td><strong>${escapeHtml(p.title)}</strong></td>
+      <td><span class="tag-category">${escapeHtml(p.category)}</span></td>
+      <td>${escapeHtml((p.techStack || []).join(', '))}</td>
       <td class="actions-cell">
-        <button class="btn-icon edit" onclick="editItem('${p.id}')"><i class="fas fa-edit"></i></button>
-        <button class="btn-icon delete" onclick="deleteItem('${p.id}')"><i class="fas fa-trash"></i></button>
+        <button class="btn-icon edit" data-edit="${p.id}"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon delete" data-delete="${p.id}"><i class="fas fa-trash"></i></button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`
+    )
+    .join('');
 };
 
 const renderServices = (services) => {
-  const servicesTableBody = document.getElementById('servicesTableBody');
-  servicesTableBody.innerHTML = services.map(s => `
+  document.getElementById('servicesTableBody').innerHTML = services
+    .map(
+      (s) => `
     <tr>
       <td>${s.imageUrl ? `<img src="${getImageUrl(s.imageUrl)}" class="td-thumb">` : '-'}</td>
-      <td><strong>${s.title}</strong></td>
-      <td>${s.priceKz}</td>
-      <td>${s.priceEur}</td>
+      <td><strong>${escapeHtml(s.title)}</strong></td>
+      <td>${escapeHtml(s.priceKz)}</td>
+      <td>${escapeHtml(s.priceEur)}</td>
       <td class="actions-cell">
-        <button class="btn-icon edit" onclick="editItem('${s.id}')"><i class="fas fa-edit"></i></button>
-        <button class="btn-icon delete" onclick="deleteItem('${s.id}')"><i class="fas fa-trash"></i></button>
+        <button class="btn-icon edit" data-edit="${s.id}"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon delete" data-delete="${s.id}"><i class="fas fa-trash"></i></button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`
+    )
+    .join('');
 };
 
-const editItem = async (id) => {
-  const res = await fetch(`${API_URL}/${currentTab}`);
-  const items = await res.json();
-  const item = items.find(i => i.id === id);
-  if (!item) return;
+const statusBadge = (status) =>
+  `<span class="status-badge status-${escapeHtml(status)}">${escapeHtml(status)}</span>`;
 
-  itemForm.reset();
-  document.getElementById('itemIdInput').value = item.id;
-  document.getElementById('modalTitle').textContent = `Editar ${currentTab === 'projects' ? 'Projecto' : 'Serviço'}`;
-  
-  // Fill common fields
-  imageUrlInput.value = item.imageUrl || '';
-  if (item.imageUrl) {
-    imagePreview.innerHTML = `<img src="${getImageUrl(item.imageUrl)}" style="max-width:100px; border-radius:8px; margin-top:10px;">`;
-  } else {
-    imagePreview.innerHTML = '';
+const renderPosts = (posts) => {
+  document.getElementById('postsTableBody').innerHTML = (posts || [])
+    .map(
+      (p) => `
+    <tr>
+      <td>${p.coverUrl ? `<img src="${getImageUrl(p.coverUrl)}" class="td-thumb">` : '-'}</td>
+      <td><strong>${escapeHtml(p.title)}</strong><br><small>${escapeHtml(p.slug)}</small></td>
+      <td>${statusBadge(p.status)}</td>
+      <td>${escapeHtml((p.tags || []).join(', '))}</td>
+      <td class="actions-cell">
+        <button class="btn-icon edit" data-edit="${p.id}"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon delete" data-delete="${p.id}"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`
+    )
+    .join('');
+};
+
+const renderBooks = (books) => {
+  document.getElementById('booksTableBody').innerHTML = (books || [])
+    .map(
+      (b) => `
+    <tr>
+      <td>${b.coverUrl ? `<img src="${getImageUrl(b.coverUrl)}" class="td-thumb">` : '-'}</td>
+      <td><strong>${escapeHtml(b.title)}</strong><br><small>${escapeHtml(b.slug)}</small></td>
+      <td>${b.isFree ? 'Grátis' : escapeHtml(b.priceKz || b.priceEur || '-')}</td>
+      <td>${b.hasFile ? '<i class="fas fa-check" style="color:green"></i>' : '<i class="fas fa-times" style="color:#c00"></i>'}</td>
+      <td>${statusBadge(b.status)}</td>
+      <td class="actions-cell">
+        <button class="btn-icon edit" data-edit="${b.id}"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon delete" data-delete="${b.id}"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`
+    )
+    .join('');
+};
+
+const renderOrders = (orders) => {
+  document.getElementById('ordersTableBody').innerHTML = (orders || [])
+    .map(
+      (o) => `
+    <tr>
+      <td><code>${escapeHtml(o.id.slice(0, 8).toUpperCase())}</code></td>
+      <td>${escapeHtml(o.customerName)}<br><small>${escapeHtml(o.customerEmail)}</small></td>
+      <td>${escapeHtml(o.book?.title || '-')}</td>
+      <td>${escapeHtml(o.method)}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td class="actions-cell">
+        ${o.status === 'pending' ? `<button class="btn-icon" title="Confirmar" data-order-action="paid" data-order-id="${o.id}"><i class="fas fa-check"></i></button>
+        <button class="btn-icon delete" title="Rejeitar" data-order-action="rejected" data-order-id="${o.id}"><i class="fas fa-times"></i></button>` : ''}
+        ${o.status === 'paid' ? `<button class="btn-icon" title="Reenviar link" data-order-action="resend" data-order-id="${o.id}"><i class="fas fa-link"></i></button>` : ''}
+      </td>
+    </tr>`
+    )
+    .join('');
+};
+
+document.querySelector('.admin-content')?.addEventListener('click', async (e) => {
+  const editBtn = e.target.closest('[data-edit]');
+  const deleteBtn = e.target.closest('[data-delete]');
+  const orderBtn = e.target.closest('[data-order-action]');
+
+  if (editBtn) {
+    await editItem(editBtn.dataset.edit);
+  } else if (deleteBtn) {
+    await deleteItem(deleteBtn.dataset.delete);
+  } else if (orderBtn) {
+    await handleOrderAction(orderBtn.dataset.orderId, orderBtn.dataset.orderAction);
   }
+});
 
-  // Fill specific fields (imageUrl e id são tratados acima)
-  const inputs = itemForm.querySelectorAll('input, select, textarea');
-  inputs.forEach(input => {
+const showDownloadLink = (download) => {
+  if (!download?.downloadUrl) return;
+  document.getElementById('downloadLinkInput').value = download.downloadUrl;
+  document.getElementById('downloadMeta').textContent = download.expiresAt
+    ? `Expira: ${new Date(download.expiresAt).toLocaleString('pt-AO')}`
+    : '';
+  downloadModal.classList.remove('hidden');
+};
+
+const handleOrderAction = async (id, action) => {
+  try {
+    let body;
+    if (action === 'resend') body = { action: 'resend' };
+    else body = { status: action };
+
+    const res = await fetch(`${API_URL}/orders/${id}`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Falha na operação');
+      return;
+    }
+    if (data.download) showDownloadLink(data.download);
+    loadData();
+  } catch {
+    alert('Erro ao actualizar pedido');
+  }
+};
+
+document.querySelector('.close-download-modal')?.addEventListener('click', () => {
+  downloadModal.classList.add('hidden');
+});
+
+document.getElementById('copyDownloadLink')?.addEventListener('click', async () => {
+  const input = document.getElementById('downloadLinkInput');
+  await navigator.clipboard.writeText(input.value);
+  alert('Link copiado');
+});
+
+const parseVideoEmbeds = (text) =>
+  String(text || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((url) => ({ url }));
+
+const fillFormFields = (container, item, special = {}) => {
+  const inputs = container.querySelectorAll('input, select, textarea');
+  inputs.forEach((input) => {
     if (!input.name || input.name === 'id' || input.name === 'imageUrl') return;
+    if (special[input.name] !== undefined) {
+      input.value = special[input.name];
+      return;
+    }
     if (item[input.name] !== undefined && item[input.name] !== null) {
-      if (input.name === 'techStack' || input.name === 'features') {
+      if (input.name === 'techStack' || input.name === 'features' || input.name === 'tags') {
         input.value = Array.isArray(item[input.name]) ? item[input.name].join(', ') : item[input.name];
+      } else if (input.name === 'isFree') {
+        input.value = item.isFree ? 'true' : 'false';
       } else {
         input.value = item[input.name];
       }
     }
   });
+};
 
-  document.getElementById('projectFields').classList.toggle('hidden', currentTab !== 'projects');
-  document.getElementById('serviceFields').classList.toggle('hidden', currentTab !== 'services');
+const editItem = async (id) => {
+  itemForm.reset();
+  document.getElementById('itemIdInput').value = id;
+  imagePreview.innerHTML = '';
+  imageUrlInput.value = '';
+  editingBookHasFile = false;
+
+  let item;
+  if (currentTab === 'projects') {
+    const items = await (await fetch(`${API_URL}/projects`)).json();
+    item = items.find((i) => i.id === id);
+  } else if (currentTab === 'services') {
+    const items = await (await fetch(`${API_URL}/services`)).json();
+    item = items.find((i) => i.id === id);
+  } else if (currentTab === 'posts') {
+    const items = await (
+      await fetch(`${API_URL}/posts/admin/all`, { headers: { Authorization: `Bearer ${token}` } })
+    ).json();
+    item = items.find((i) => i.id === id);
+  } else if (currentTab === 'books') {
+    const items = await (
+      await fetch(`${API_URL}/books/admin/all`, { headers: { Authorization: `Bearer ${token}` } })
+    ).json();
+    item = items.find((i) => i.id === id);
+  }
+
+  if (!item) return;
+
+  document.getElementById('modalTitle').textContent = `Editar ${TAB_TITLES[currentTab]}`;
+  const cover = item.coverUrl || item.imageUrl;
+  imageUrlInput.value = cover || '';
+  if (cover) {
+    imagePreview.innerHTML = `<img src="${getImageUrl(cover)}" style="max-width:100px; border-radius:8px; margin-top:10px;">`;
+  }
+
+  if (currentTab === 'projects') fillFormFields(document.getElementById('projectFields'), item);
+  if (currentTab === 'services') fillFormFields(document.getElementById('serviceFields'), item);
+  if (currentTab === 'posts') {
+    const embeds = Array.isArray(item.videoEmbeds)
+      ? item.videoEmbeds.map((v) => v.url || v).join('\n')
+      : '';
+    fillFormFields(document.getElementById('postFields'), item, { videoEmbeds: embeds });
+  }
+  if (currentTab === 'books') {
+    editingBookHasFile = Boolean(item.hasFile);
+    document.getElementById('pdfStatus').textContent = item.hasFile
+      ? 'PDF carregado'
+      : 'Sem ficheiro';
+    fillFormFields(document.getElementById('bookFields'), item);
+  }
+
+  setActiveTab(currentTab);
   itemModal.classList.remove('hidden');
 };
 
 const deleteItem = async (id) => {
   if (!confirm('Tem a certeza?')) return;
-  await fetch(`${API_URL}/${currentTab}/${id}`, {
+  const endpoint =
+    currentTab === 'posts' || currentTab === 'books' ? currentTab : currentTab;
+  await fetch(`${API_URL}/${endpoint}/${id}`, {
     method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
   loadData();
 };
@@ -177,18 +390,10 @@ const deleteItem = async (id) => {
 window.editItem = editItem;
 window.deleteItem = deleteItem;
 
-// ===== IMAGE UPLOAD =====
-const imageUpload = document.getElementById('imageUpload');
-const imageUrlInput = document.getElementById('imageUrlInput');
-const imagePreview = document.getElementById('imagePreview');
-
 const saveProjectImageUrl = async (projectId, imageUrl) => {
   const res = await fetch(`${API_URL}/projects/${projectId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+    headers: authHeaders(),
     body: JSON.stringify({ imageUrl }),
   });
   if (!res.ok) {
@@ -203,12 +408,14 @@ imageUpload.addEventListener('change', async (e) => {
 
   const formData = new FormData();
   formData.append('image', file);
+  if (currentTab === 'posts') formData.append('folder', 'blog');
+  if (currentTab === 'books') formData.append('folder', 'books');
 
   try {
     const res = await fetch(`${API_URL}/upload`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
     });
     const data = await res.json();
     if (!res.ok) {
@@ -232,19 +439,53 @@ imageUpload.addEventListener('change', async (e) => {
   }
 });
 
-// ===== MODAL LOGIC =====
+document.getElementById('pdfUpload')?.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  const bookId = document.getElementById('itemIdInput').value;
+  if (!file) return;
+  if (!bookId) {
+    alert('Guarda o livro primeiro e depois faz upload do PDF.');
+    e.target.value = '';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    document.getElementById('pdfStatus').textContent = 'A enviar...';
+    const res = await fetch(`${API_URL}/books/${bookId}/file`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Erro no upload do PDF');
+      document.getElementById('pdfStatus').textContent = 'Falha no upload';
+      return;
+    }
+    editingBookHasFile = true;
+    document.getElementById('pdfStatus').textContent = 'PDF carregado';
+    loadData();
+  } catch {
+    alert('Erro no upload do PDF');
+  } finally {
+    e.target.value = '';
+  }
+});
+
 addNewBtn.addEventListener('click', () => {
+  if (currentTab === 'orders') return;
   itemForm.reset();
-  // Limpar campos ocultos explicitamente para garantir que é um INSERT e não UPDATE
   document.getElementById('itemIdInput').value = '';
-  document.getElementById('imageUrlInput').value = '';
-  
+  imageUrlInput.value = '';
   imagePreview.innerHTML = '';
-  document.getElementById('modalTitle').textContent = `Novo ${currentTab === 'projects' ? 'Projecto' : 'Serviço'}`;
-  
-  document.getElementById('projectFields').classList.toggle('hidden', currentTab !== 'projects');
-  document.getElementById('serviceFields').classList.toggle('hidden', currentTab !== 'services');
-  
+  editingBookHasFile = false;
+  const pdfStatus = document.getElementById('pdfStatus');
+  if (pdfStatus) pdfStatus.textContent = 'Sem ficheiro — guarda primeiro, depois faz upload';
+  document.getElementById('modalTitle').textContent = `Novo — ${TAB_TITLES[currentTab]}`;
+  setActiveTab(currentTab);
   itemModal.classList.remove('hidden');
 });
 
@@ -252,101 +493,124 @@ closeModal.addEventListener('click', () => itemModal.classList.add('hidden'));
 
 itemForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (currentTab === 'orders') return;
+
   const id = document.getElementById('itemIdInput').value;
   const imageUrl = imageUrlInput.value.trim();
-
-  const projectContainer = document.getElementById('projectFields');
-  const serviceContainer = document.getElementById('serviceFields');
-
   let body = {};
+  let endpoint = currentTab;
+
   if (currentTab === 'projects') {
+    const c = document.getElementById('projectFields');
     body = {
-      title: projectContainer.querySelector('[name="title"]').value,
-      category: projectContainer.querySelector('[name="category"]').value,
-      description: projectContainer.querySelector('[name="description"]').value,
-      overview: projectContainer.querySelector('[name="overview"]').value,
-      challenge: projectContainer.querySelector('[name="challenge"]').value,
-      solution: projectContainer.querySelector('[name="solution"]').value,
-      role: projectContainer.querySelector('[name="role"]').value,
-      techStack: projectContainer.querySelector('[name="techStack"]').value.split(',').map(s => s.trim()),
+      title: c.querySelector('[name="title"]').value,
+      category: c.querySelector('[name="category"]').value,
+      description: c.querySelector('[name="description"]').value,
+      overview: c.querySelector('[name="overview"]').value,
+      challenge: c.querySelector('[name="challenge"]').value,
+      solution: c.querySelector('[name="solution"]').value,
+      role: c.querySelector('[name="role"]').value,
+      techStack: c.querySelector('[name="techStack"]').value.split(',').map((s) => s.trim()).filter(Boolean),
       imageUrl,
-      link: projectContainer.querySelector('[name="link"]').value
+      link: c.querySelector('[name="link"]').value,
     };
-  } else {
+  } else if (currentTab === 'services') {
+    const c = document.getElementById('serviceFields');
     body = {
-      title: serviceContainer.querySelector('[name="title"]').value,
-      description: serviceContainer.querySelector('[name="description"]').value,
-      priceKz: serviceContainer.querySelector('[name="priceKz"]').value,
-      priceEur: serviceContainer.querySelector('[name="priceEur"]').value,
-      features: serviceContainer.querySelector('[name="features"]').value,
+      title: c.querySelector('[name="title"]').value,
+      description: c.querySelector('[name="description"]').value,
+      priceKz: c.querySelector('[name="priceKz"]').value,
+      priceEur: c.querySelector('[name="priceEur"]').value,
+      features: c.querySelector('[name="features"]').value,
+    };
+  } else if (currentTab === 'posts') {
+    const c = document.getElementById('postFields');
+    body = {
+      title: c.querySelector('[name="title"]').value,
+      slug: c.querySelector('[name="slug"]').value,
+      excerpt: c.querySelector('[name="excerpt"]').value,
+      content: c.querySelector('[name="content"]').value,
+      status: c.querySelector('[name="status"]').value,
+      tags: c.querySelector('[name="tags"]').value,
+      videoEmbeds: parseVideoEmbeds(c.querySelector('[name="videoEmbeds"]').value),
+      metaTitle: c.querySelector('[name="metaTitle"]').value,
+      metaDescription: c.querySelector('[name="metaDescription"]').value,
+      coverUrl: imageUrl,
+    };
+  } else if (currentTab === 'books') {
+    const c = document.getElementById('bookFields');
+    body = {
+      title: c.querySelector('[name="title"]').value,
+      slug: c.querySelector('[name="slug"]').value,
+      description: c.querySelector('[name="description"]').value,
+      priceKz: c.querySelector('[name="priceKz"]').value,
+      priceEur: c.querySelector('[name="priceEur"]').value,
+      isFree: c.querySelector('[name="isFree"]').value === 'true',
+      status: c.querySelector('[name="status"]').value,
+      tags: c.querySelector('[name="tags"]').value,
+      coverUrl: imageUrl,
     };
   }
 
   try {
-    const url = id ? `${API_URL}/${currentTab}/${id}` : `${API_URL}/${currentTab}`;
+    const url = id ? `${API_URL}/${endpoint}/${id}` : `${API_URL}/${endpoint}`;
     const method = id ? 'PUT' : 'POST';
-
     const res = await fetch(url, {
-      method: method,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
+      method,
+      headers: authHeaders(),
+      body: JSON.stringify(body),
     });
 
     if (res.ok) {
+      const saved = await res.json().catch(() => null);
       itemModal.classList.add('hidden');
+      if (currentTab === 'books' && saved?.id && !id) {
+        document.getElementById('itemIdInput').value = saved.id;
+        alert('Livro criado. Edita-o novamente para fazer upload do PDF.');
+      }
       loadData();
     } else {
       const err = await res.json();
       alert(`Erro: ${err.error || 'Falha ao guardar'}`);
     }
-  } catch (err) {
+  } catch {
     alert('Erro ao guardar');
   }
 });
 
-// ===== THEME =====
 const themeToggles = document.querySelectorAll('.theme-toggle');
-const savedTheme  = localStorage.getItem('theme') || 'light';
+const savedTheme = localStorage.getItem('theme') || 'light';
 
 const setTheme = (theme) => {
-    if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-        themeToggles.forEach(btn => {
-            const icon = btn.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            }
-        });
-    } else {
-        document.documentElement.classList.remove('dark');
-        themeToggles.forEach(btn => {
-            const icon = btn.querySelector('i');
-            if (icon) {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
-    }
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark');
+    themeToggles.forEach((btn) => {
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      }
+    });
+  } else {
+    document.documentElement.classList.remove('dark');
+    themeToggles.forEach((btn) => {
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
+    });
+  }
 };
 
 setTheme(savedTheme);
-
-themeToggles.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const isDark = document.documentElement.classList.toggle('dark');
-        const theme = isDark ? 'dark' : 'light';
-        localStorage.setItem('theme', theme);
-        setTheme(theme);
-    });
+themeToggles.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    const theme = isDark ? 'dark' : 'light';
+    localStorage.setItem('theme', theme);
+    setTheme(theme);
+  });
 });
 
-window.deleteItem = deleteItem;
-
-// Initial Check
 checkAuth();
-
-

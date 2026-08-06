@@ -302,6 +302,43 @@
 
 .hidden { display: none !important; }
 
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+  color: var(--fg);
+}
+.status-published, .status-paid { background: color-mix(in srgb, #22c55e 20%, transparent); color: #15803d; }
+.status-draft, .status-pending { background: color-mix(in srgb, #f59e0b 20%, transparent); color: #b45309; }
+.status-archived, .status-rejected, .status-expired { background: color-mix(in srgb, #ef4444 18%, transparent); color: #b91c1c; }
+
+.form-hint { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; }
+
+.modal-sm { max-width: 440px; }
+.download-link-box input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.75rem 0 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+}
+.close-download-modal {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.modal-content { max-width: 720px; }
+
 /* Modal Responsiveness */
 @media (max-width: 600px) {
   .form-grid {

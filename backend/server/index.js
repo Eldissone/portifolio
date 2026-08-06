@@ -2,15 +2,19 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pkg from '@prisma/client';
-const { PrismaClient } = pkg;
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { createClient } from '@supabase/supabase-js';
+
+import prisma from './lib/prisma.js';
+import { authenticate, getJwtSecret } from './lib/auth.js';
+import postsRouter from './routes/posts.js';
+import booksRouter from './routes/books.js';
+import ordersRouter from './routes/orders.js';
+import downloadsRouter from './routes/downloads.js';
+import uploadRouter from './routes/upload.js';
 
 dotenv.config();
 
@@ -18,94 +22,47 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
-// Inicializar Supabase (service role no servidor — bypassa RLS do Storage)
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_KEY ||
-  process.env.SUPABASE_ANON_KEY;
-const bucketName = process.env.SUPABASE_BUCKET || 'portfolio-uploads';
-
-let supabase;
-if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey);
-  const keyType = process.env.SUPABASE_SERVICE_ROLE_KEY
-    ? 'service role'
-    : 'anon (uploads podem falhar por RLS)';
-  console.log(`✅ Supabase conectado (${keyType})`);
-} else {
-  console.warn('⚠️  Variáveis Supabase não configuradas (SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY)');
-}
-
-// Configurar multer para armazenamento em memória
-const storage = multer.memoryStorage();
-
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
-  fileFilter: (req, file, cb) => {
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Tipo de ficheiro não suportado'));
-    }
-  }
-});
-
-// Origens permitidas (dev + produção)
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4173',
   'https://www.eldissone.com',
   'https://eldissone.com',
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir requests sem origin (ex: Postman, servidor-a-servidor)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error(`CORS bloqueado para: ${origin}`));
     }
   },
-  credentials: true
+  credentials: true,
 }));
-app.use(express.json());
 
-// Health check endpoint
+app.use(express.json({ limit: '1mb' }));
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Middlewares
-const authenticate = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.userId = decoded.userId;
-    next();
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
-};
-
-// Auth Routes
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({ where: { email } });
-    
+
     if (user && await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
+      const token = jwt.sign({ userId: user.id }, getJwtSecret(), { expiresIn: '24h' });
       res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
     } else {
       res.status(401).json({ error: 'Credenciais inválidas' });
@@ -116,7 +73,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Projects API
+// Projects
 app.get('/api/projects', async (req, res) => {
   try {
     const projects = await prisma.project.findMany({ orderBy: { order: 'asc' } });
@@ -141,7 +98,7 @@ app.put('/api/projects/:id', authenticate, async (req, res) => {
   try {
     const project = await prisma.project.update({
       where: { id: req.params.id },
-      data: req.body
+      data: req.body,
     });
     res.json(project);
   } catch (error) {
@@ -160,74 +117,7 @@ app.delete('/api/projects/:id', authenticate, async (req, res) => {
   }
 });
 
-// Upload Route — Supabase Storage
-app.post('/api/upload', authenticate, upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Nenhuma imagem enviada' });
-    }
-
-    if (!supabase) {
-      return res.status(500).json({ error: 'Armazenamento não configurado' });
-    }
-
-    // Sanitizar nome do ficheiro
-    const sanitized = req.file.originalname
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9._-]/g, '_')
-      .replace(/__+/g, '_')
-      .toLowerCase();
-    
-    const fileName = `${Date.now()}-${sanitized}`;
-    const filePath = `portfolio/${fileName}`;
-
-    // Upload para Supabase Storage
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .upload(filePath, req.file.buffer, {
-        contentType: req.file.mimetype,
-        upsert: false
-      });
-
-    if (error) {
-      console.error('❌ Erro ao fazer upload:', error);
-      const rlsBlocked =
-        error.statusCode === '403' ||
-        error.message?.includes('row-level security');
-      return res.status(500).json({
-        error: rlsBlocked
-          ? 'Permissão negada no Supabase Storage. Defina SUPABASE_SERVICE_ROLE_KEY no backend.'
-          : 'Erro ao fazer upload da imagem',
-      });
-    }
-
-    // Obter URL pública
-    const { data: urlData } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(filePath);
-
-    const publicUrl = urlData?.publicUrl;
-
-    if (!publicUrl) {
-      console.error('❌ Erro ao gerar URL pública');
-      return res.status(500).json({ error: 'Erro ao gerar URL da imagem' });
-    }
-
-    console.log('📤 Upload para Supabase bem-sucedido:', {
-      fileName: fileName,
-      size: req.file.size,
-      url: publicUrl
-    });
-
-    res.json({ imageUrl: publicUrl });
-  } catch (error) {
-    console.error('❌ Erro no upload:', error);
-    res.status(500).json({ error: 'Erro ao processar upload' });
-  }
-});
-
-// Services API
+// Services
 app.get('/api/services', async (req, res) => {
   try {
     const services = await prisma.service.findMany({
@@ -243,11 +133,11 @@ app.get('/api/services', async (req, res) => {
 app.post('/api/services', authenticate, async (req, res) => {
   try {
     const { features, ...rest } = req.body;
-    const service = await prisma.service.create({ 
-      data: { 
+    const service = await prisma.service.create({
+      data: {
         ...rest,
-        features: Array.isArray(features) ? features : features.split(',').map(f => f.trim())
-      } 
+        features: Array.isArray(features) ? features : features.split(',').map((f) => f.trim()),
+      },
     });
     res.status(201).json(service);
   } catch (error) {
@@ -263,8 +153,8 @@ app.put('/api/services/:id', authenticate, async (req, res) => {
       where: { id: req.params.id },
       data: {
         ...rest,
-        features: Array.isArray(features) ? features : features.split(',').map(f => f.trim())
-      }
+        features: Array.isArray(features) ? features : features.split(',').map((f) => f.trim()),
+      },
     });
     res.json(service);
   } catch (error) {
@@ -283,23 +173,33 @@ app.delete('/api/services/:id', authenticate, async (req, res) => {
   }
 });
 
+// New modules
+app.use('/api/upload', uploadRouter);
+app.use('/api/posts', postsRouter);
+app.use('/api/books', booksRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/downloads', downloadsRouter);
+
 // Servir o frontend (dist) em produção
 const distPath = path.join(__dirname, '../../frontend/dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
-  // Redirecionar páginas HTML específicas
-  app.get('/src/pages/admin.html', (req, res) => {
-    res.sendFile(path.join(distPath, 'src/pages/admin.html'));
-  });
-  app.get('/src/pages/servicos.html', (req, res) => {
-    res.sendFile(path.join(distPath, 'src/pages/servicos.html'));
-  });
-  app.get('/src/pages/projeto.html', (req, res) => {
-    res.sendFile(path.join(distPath, 'src/pages/projeto.html'));
-  });
-  // Fallback para o index principal
+  const pageRoutes = [
+    '/src/pages/admin.html',
+    '/src/pages/servicos.html',
+    '/src/pages/projeto.html',
+    '/src/pages/blog.html',
+    '/src/pages/blog-post.html',
+    '/src/pages/biblioteca.html',
+    '/src/pages/livro.html',
+    '/src/pages/download.html',
+  ];
+  for (const route of pageRoutes) {
+    app.get(route, (req, res) => {
+      res.sendFile(path.join(distPath, route.replace(/^\//, '')));
+    });
+  }
   app.get('*', (req, res) => {
-    // Não interceptar rotas de API
     if (req.path.startsWith('/api')) return;
     res.sendFile(path.join(distPath, 'index.html'));
   });
