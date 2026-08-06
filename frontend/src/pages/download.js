@@ -28,9 +28,14 @@ async function run() {
     root.innerHTML = `
       <h3>${escapeHtml(data.book?.title || 'Download pronto')}</h3>
       <p>O ficheiro abre num link temporário. Usos restantes: ${data.remainingUses ?? '—'}</p>
-      <a class="btn btn-primary" href="${escapeHtml(data.url)}" target="_blank" rel="noopener noreferrer">
-        <i class="fas fa-download"></i> Abrir PDF
-      </a>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+        <a class="btn btn-primary" href="${escapeHtml(data.url)}" target="_blank" rel="noopener noreferrer">
+          <i class="fas fa-download"></i> Abrir PDF
+        </a>
+        <a class="btn btn-outline" href="reader.html?token=${encodeURIComponent(token)}">
+          <i class="fas fa-book-open"></i> Ler no site
+        </a>
+      </div>
       <p class="form-hint" style="margin-top:1rem;">Se o download não iniciar, usa o botão acima.</p>
     `;
 

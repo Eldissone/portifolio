@@ -49,6 +49,7 @@ router.get('/:token', downloadLimiter, async (req, res) => {
       book: { id: record.book.id, title: record.book.title, slug: record.book.slug },
       remainingUses: Math.max(0, record.maxUses - record.usedCount - 1),
       expiresAt: record.expiresAt,
+      readerPath: `/src/pages/reader.html?token=${encodeURIComponent(rawToken)}`,
     });
   } catch (error) {
     console.error('❌ Erro no download:', error);

@@ -358,6 +358,7 @@
   --primary: #FF7A00;
   --primary-light: #FFA24D;
   --primary-dark: #CC6200;
+  --white:#ffffff;
   --bg: hsl(30, 20%, 97%);
   --bg-dark: hsl(30, 8%, 12%);
   --fg: hsl(30, 10%, 10%);

@@ -19,6 +19,7 @@ export default defineConfig({
         biblioteca: 'src/pages/biblioteca.html',
         livro: 'src/pages/livro.html',
         download: 'src/pages/download.html',
+        reader: 'src/pages/reader.html',
       }
     }
   }

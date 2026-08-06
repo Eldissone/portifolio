@@ -193,6 +193,7 @@ if (fs.existsSync(distPath)) {
     '/src/pages/biblioteca.html',
     '/src/pages/livro.html',
     '/src/pages/download.html',
+    '/src/pages/reader.html',
   ];
   for (const route of pageRoutes) {
     app.get(route, (req, res) => {

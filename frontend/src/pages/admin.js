@@ -33,8 +33,37 @@ const imageUrlInput = document.getElementById('imageUrlInput');
 const imagePreview = document.getElementById('imagePreview');
 const downloadModal = document.getElementById('downloadModal');
 
+const isUnauthorized = (res) => res.status === 401;
+
+const resetAuth = (message = 'A tua sessão expirou. Faz login novamente.') => {
+  token = null;
+  localStorage.removeItem('admin_token');
+  if (message) {
+    loginError.textContent = message;
+  }
+  loginOverlay.classList.remove('hidden');
+  adminDashboard.classList.add('hidden');
+};
+
+const fetchJson = async (url, options = {}) => {
+  const res = await fetch(url, options);
+  const data = await res.json().catch(() => null);
+
+  if (isUnauthorized(res)) {
+    resetAuth();
+    throw new Error('unauthorized');
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.error || `Erro HTTP ${res.status}`);
+  }
+
+  return data;
+};
+
 const checkAuth = () => {
   if (token) {
+    loginError.textContent = '';
     loginOverlay.classList.add('hidden');
     adminDashboard.classList.remove('hidden');
     loadData();
@@ -109,29 +138,26 @@ const authHeaders = () => ({
 const loadData = async () => {
   try {
     if (currentTab === 'projects') {
-      const res = await fetch(`${API_URL}/projects`);
-      renderProjects(await res.json());
+      renderProjects(await fetchJson(`${API_URL}/projects`));
     } else if (currentTab === 'services') {
-      const res = await fetch(`${API_URL}/services`);
-      renderServices(await res.json());
+      renderServices(await fetchJson(`${API_URL}/services`));
     } else if (currentTab === 'posts') {
-      const res = await fetch(`${API_URL}/posts/admin/all`, {
+      renderPosts(await fetchJson(`${API_URL}/posts/admin/all`, {
         headers: { Authorization: `Bearer ${token}` },
-      });
-      renderPosts(await res.json());
+      }));
     } else if (currentTab === 'books') {
-      const res = await fetch(`${API_URL}/books/admin/all`, {
+      renderBooks(await fetchJson(`${API_URL}/books/admin/all`, {
         headers: { Authorization: `Bearer ${token}` },
-      });
-      renderBooks(await res.json());
+      }));
     } else if (currentTab === 'orders') {
-      const res = await fetch(`${API_URL}/orders`, {
+      renderOrders(await fetchJson(`${API_URL}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
-      });
-      renderOrders(await res.json());
+      }));
     }
   } catch (err) {
-    console.error(err);
+    if (err.message !== 'unauthorized') {
+      console.error(err);
+    }
   }
 };
 
@@ -182,7 +208,8 @@ const statusBadge = (status) =>
   `<span class="status-badge status-${escapeHtml(status)}">${escapeHtml(status)}</span>`;
 
 const renderPosts = (posts) => {
-  document.getElementById('postsTableBody').innerHTML = (posts || [])
+  const list = Array.isArray(posts) ? posts : [];
+  document.getElementById('postsTableBody').innerHTML = list
     .map(
       (p) => `
     <tr>
@@ -200,7 +227,8 @@ const renderPosts = (posts) => {
 };
 
 const renderBooks = (books) => {
-  document.getElementById('booksTableBody').innerHTML = (books || [])
+  const list = Array.isArray(books) ? books : [];
+  document.getElementById('booksTableBody').innerHTML = list
     .map(
       (b) => `
     <tr>
@@ -219,7 +247,8 @@ const renderBooks = (books) => {
 };
 
 const renderOrders = (orders) => {
-  document.getElementById('ordersTableBody').innerHTML = (orders || [])
+  const list = Array.isArray(orders) ? orders : [];
+  document.getElementById('ordersTableBody').innerHTML = list
     .map(
       (o) => `
     <tr>
@@ -330,20 +359,20 @@ const editItem = async (id) => {
 
   let item;
   if (currentTab === 'projects') {
-    const items = await (await fetch(`${API_URL}/projects`)).json();
+    const items = await fetchJson(`${API_URL}/projects`);
     item = items.find((i) => i.id === id);
   } else if (currentTab === 'services') {
-    const items = await (await fetch(`${API_URL}/services`)).json();
+    const items = await fetchJson(`${API_URL}/services`);
     item = items.find((i) => i.id === id);
   } else if (currentTab === 'posts') {
-    const items = await (
-      await fetch(`${API_URL}/posts/admin/all`, { headers: { Authorization: `Bearer ${token}` } })
-    ).json();
+    const items = await fetchJson(`${API_URL}/posts/admin/all`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     item = items.find((i) => i.id === id);
   } else if (currentTab === 'books') {
-    const items = await (
-      await fetch(`${API_URL}/books/admin/all`, { headers: { Authorization: `Bearer ${token}` } })
-    ).json();
+    const items = await fetchJson(`${API_URL}/books/admin/all`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     item = items.find((i) => i.id === id);
   }
 
@@ -372,19 +401,28 @@ const editItem = async (id) => {
     fillFormFields(document.getElementById('bookFields'), item);
   }
 
-  setActiveTab(currentTab);
+  document.getElementById('projectFields')?.classList.toggle('hidden', currentTab !== 'projects');
+  document.getElementById('serviceFields')?.classList.toggle('hidden', currentTab !== 'services');
+  document.getElementById('postFields')?.classList.toggle('hidden', currentTab !== 'posts');
+  document.getElementById('bookFields')?.classList.toggle('hidden', currentTab !== 'books');
+  document.getElementById('mediaSection')?.classList.toggle('hidden', currentTab === 'orders');
+  document.getElementById('formActions')?.classList.toggle('hidden', currentTab === 'orders');
   itemModal.classList.remove('hidden');
 };
 
 const deleteItem = async (id) => {
   if (!confirm('Tem a certeza?')) return;
-  const endpoint =
-    currentTab === 'posts' || currentTab === 'books' ? currentTab : currentTab;
-  await fetch(`${API_URL}/${endpoint}/${id}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  loadData();
+  try {
+    await fetchJson(`${API_URL}/${currentTab}/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    loadData();
+  } catch (err) {
+    if (err.message !== 'unauthorized') {
+      alert(err.message || 'Erro ao apagar');
+    }
+  }
 };
 
 window.editItem = editItem;
@@ -417,9 +455,13 @@ imageUpload.addEventListener('change', async (e) => {
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => null);
+    if (isUnauthorized(res)) {
+      resetAuth();
+      return;
+    }
     if (!res.ok) {
-      alert(data.error || 'Erro no upload');
+      alert(data?.error || 'Erro no upload');
       return;
     }
     if (data.imageUrl) {
@@ -459,9 +501,13 @@ document.getElementById('pdfUpload')?.addEventListener('change', async (e) => {
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => null);
+    if (isUnauthorized(res)) {
+      resetAuth();
+      return;
+    }
     if (!res.ok) {
-      alert(data.error || 'Erro no upload do PDF');
+      alert(data?.error || 'Erro no upload do PDF');
       document.getElementById('pdfStatus').textContent = 'Falha no upload';
       return;
     }
@@ -485,7 +531,12 @@ addNewBtn.addEventListener('click', () => {
   const pdfStatus = document.getElementById('pdfStatus');
   if (pdfStatus) pdfStatus.textContent = 'Sem ficheiro — guarda primeiro, depois faz upload';
   document.getElementById('modalTitle').textContent = `Novo — ${TAB_TITLES[currentTab]}`;
-  setActiveTab(currentTab);
+  document.getElementById('projectFields')?.classList.toggle('hidden', currentTab !== 'projects');
+  document.getElementById('serviceFields')?.classList.toggle('hidden', currentTab !== 'services');
+  document.getElementById('postFields')?.classList.toggle('hidden', currentTab !== 'posts');
+  document.getElementById('bookFields')?.classList.toggle('hidden', currentTab !== 'books');
+  document.getElementById('mediaSection')?.classList.toggle('hidden', currentTab === 'orders');
+  document.getElementById('formActions')?.classList.toggle('hidden', currentTab === 'orders');
   itemModal.classList.remove('hidden');
 });
 
@@ -560,6 +611,10 @@ itemForm.addEventListener('submit', async (e) => {
       headers: authHeaders(),
       body: JSON.stringify(body),
     });
+    if (isUnauthorized(res)) {
+      resetAuth();
+      return;
+    }
 
     if (res.ok) {
       const saved = await res.json().catch(() => null);

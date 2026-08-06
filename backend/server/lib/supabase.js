@@ -14,6 +14,7 @@ export const downloadTokenTtlHours = Number(process.env.DOWNLOAD_TOKEN_TTL_HOURS
 export const downloadTokenMaxUses = Number(process.env.DOWNLOAD_TOKEN_MAX_USES || 3);
 
 let supabase = null;
+let privateBucketReady = false;
 
 if (supabaseUrl && supabaseKey) {
   supabase = createClient(supabaseUrl, supabaseKey);
@@ -38,6 +39,47 @@ export function sanitizeFileName(originalName) {
     .toLowerCase();
 }
 
+async function ensurePrivateBucket() {
+  if (!supabase) throw new Error('Armazenamento não configurado');
+  if (privateBucketReady) return;
+
+  const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+  if (listError) {
+    const err = new Error(listError.message);
+    err.statusCode = listError.statusCode;
+    err.rlsBlocked =
+      listError.statusCode === '403' ||
+      listError.message?.includes('row-level security');
+    throw err;
+  }
+
+  const exists = (buckets || []).some((bucket) => bucket.name === privateBucket);
+  if (exists) {
+    privateBucketReady = true;
+    return;
+  }
+
+  const { error: createError } = await supabase.storage.createBucket(privateBucket, {
+    public: false,
+    fileSizeLimit: 52428800,
+    allowedMimeTypes: ['application/pdf'],
+  });
+
+  if (createError) {
+    const err = new Error(createError.message);
+    err.statusCode = createError.statusCode;
+    err.bucketNotFound =
+      createError.statusCode === '404' ||
+      createError.message?.toLowerCase().includes('bucket not found');
+    err.rlsBlocked =
+      createError.statusCode === '403' ||
+      createError.message?.includes('row-level security');
+    throw err;
+  }
+
+  privateBucketReady = true;
+}
+
 export async function uploadPublicImage(buffer, mimetype, originalName, folder = 'portfolio') {
   if (!supabase) throw new Error('Armazenamento não configurado');
 
@@ -51,6 +93,9 @@ export async function uploadPublicImage(buffer, mimetype, originalName, folder =
   if (error) {
     const err = new Error(error.message);
     err.statusCode = error.statusCode;
+    err.bucketNotFound =
+      error.statusCode === '404' ||
+      error.message?.toLowerCase().includes('bucket not found');
     err.rlsBlocked =
       error.statusCode === '403' ||
       error.message?.includes('row-level security');
@@ -65,6 +110,7 @@ export async function uploadPublicImage(buffer, mimetype, originalName, folder =
 
 export async function uploadPrivatePdf(buffer, originalName, bookId) {
   if (!supabase) throw new Error('Armazenamento não configurado');
+  await ensurePrivateBucket();
 
   const fileName = `${Date.now()}-${sanitizeFileName(originalName)}`;
   const filePath = `books/${bookId}/${fileName}`;
@@ -87,6 +133,7 @@ export async function uploadPrivatePdf(buffer, originalName, bookId) {
 
 export async function createSignedDownloadUrl(filePath) {
   if (!supabase) throw new Error('Armazenamento não configurado');
+  await ensurePrivateBucket();
 
   const { data, error } = await supabase.storage
     .from(privateBucket)

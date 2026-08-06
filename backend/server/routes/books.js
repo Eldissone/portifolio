@@ -191,6 +191,11 @@ router.post('/:id/file', authenticate, pdfUpload.single('file'), async (req, res
     res.json({ id: updated.id, hasFile: true });
   } catch (error) {
     console.error('❌ Erro no upload do PDF:', error);
+    if (error.bucketNotFound) {
+      return res.status(500).json({
+        error: 'O bucket privado de PDFs não existe. Cria o bucket `portfolio-private` no Supabase ou define `SUPABASE_PRIVATE_BUCKET` com o nome correcto.',
+      });
+    }
     if (error.rlsBlocked) {
       return res.status(500).json({
         error: 'Permissão negada no Supabase Storage. Verifica SUPABASE_SERVICE_ROLE_KEY e o bucket privado.',

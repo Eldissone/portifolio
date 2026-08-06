@@ -112,7 +112,11 @@ async function loadBook() {
           }
           document.getElementById('freeResult').innerHTML = `
             <div class="order-result">
-              <p>Link gerado. <a href="download.html?token=${encodeURIComponent(data.token)}">Abrir download</a></p>
+              <p>Link gerado. Podes descarregar ou ler no site.</p>
+              <p style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
+                <a class="btn btn-primary btn-sm" href="download.html?token=${encodeURIComponent(data.token)}">Descarregar</a>
+                <a class="btn btn-outline btn-sm" href="reader.html?token=${encodeURIComponent(data.token)}">Ler no site</a>
+              </p>
             </div>`;
           window.location.href = `download.html?token=${encodeURIComponent(data.token)}`;
         } catch {
