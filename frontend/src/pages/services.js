@@ -17,8 +17,8 @@ const FALLBACK_SERVICES = [
   {
     title: 'Site Institucional',
     description: 'Sites profissionais para apresentar a tua empresa ou marca pessoal.',
-    priceKz: '660 000 Kz',
-    priceEur: '600 €',
+    priceKz: '420 000 Kz',
+    priceEur: '400 €',
     delivery: '2 a 4 semanas',
     features: ['Design responsivo (mobile/desktop)', 'Até 6 páginas', 'SEO básico optimizado', 'Formulário de contacto', '1 mês de suporte incluído'],
     isFeatured: true,
@@ -27,8 +27,8 @@ const FALLBACK_SERVICES = [
   {
     title: 'Plataforma de Gestão',
     description: 'Sistemas web para gerir o teu negócio (clientes, stock, facturas).',
-    priceKz: '2 750 000 Kz',
-    priceEur: '2 500 €',
+    priceKz: '2 100 000 Kz',
+    priceEur: '2 000 €',
     delivery: '6 a 12 semanas',
     features: ['Painel administrativo completo', 'Autenticação e perfis de utilizador', 'Relatórios e exportação PDF', 'API REST integrada'],
     isFeatured: false,
@@ -37,8 +37,8 @@ const FALLBACK_SERVICES = [
   {
     title: 'Landing Page',
     description: 'Página de alta conversão para captar leads, vender produtos ou promover eventos.',
-    priceKz: '220 000 Kz',
-    priceEur: '200 €',
+    priceKz: '200 000 Kz',
+    priceEur: '180 €',
     delivery: '1 a 2 semanas',
     features: ['Design premium focado em conversão', 'Integração com WhatsApp', 'Optimização para Google'],
     isFeatured: false,
